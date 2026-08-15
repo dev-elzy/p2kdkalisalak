@@ -435,10 +435,15 @@ export const TabPengaturanWeb: React.FC<TabPengaturanWebProps> = ({ currentUser 
                   <span className="font-bold text-[11px] uppercase tracking-wider block text-amber-800">
                     Pratinjau Animasi Ticker:
                   </span>
-                  <div className="p-2 bg-white rounded-lg border border-amber-200 text-xs font-medium text-slate-800 overflow-hidden relative whitespace-nowrap">
-                    <span className="animate-marquee-slow text-amber-900 font-semibold">
-                      📢 <strong>PENGUMUMAN RESMI:</strong> {config.runningText}
-                    </span>
+                  <div className="p-2 bg-white rounded-lg border border-amber-200 text-xs font-medium text-slate-800 overflow-hidden relative">
+                    <div className="animate-marquee-seamless text-amber-900 font-semibold">
+                      <span className="inline-flex items-center gap-2 pr-12 shrink-0">
+                        📢 <strong>PENGUMUMAN RESMI:</strong> {config.runningText}
+                      </span>
+                      <span className="inline-flex items-center gap-2 pr-12 shrink-0">
+                        📢 <strong>PENGUMUMAN RESMI:</strong> {config.runningText}
+                      </span>
+                    </div>
                   </div>
                 </div>
               )}

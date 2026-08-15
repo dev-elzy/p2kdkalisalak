@@ -186,7 +186,7 @@ export const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* 1.5. Dynamic Running Announcement Banner (Slow Moving Marquee) */}
+      {/* 1.5. Dynamic Running Announcement Banner (Seamless Continuous Marquee) */}
       {isRunningActive && runningText && (
         <div className="w-full bg-gradient-to-r from-blue-950 via-indigo-950 to-blue-950 text-blue-100 text-xs py-2 px-4 border-b border-blue-800/80 shadow-inner overflow-hidden">
           <div className="max-w-7xl mx-auto flex items-center gap-3">
@@ -194,10 +194,21 @@ export const Navbar: React.FC = () => {
               <Megaphone className="w-3.5 h-3.5 text-slate-950 animate-bounce" />
               PENGUMUMAN RESMI
             </span>
-            <div className="flex-1 overflow-hidden relative whitespace-nowrap">
-              <span className="animate-marquee-slow font-medium text-amber-200 text-xs tracking-wide cursor-pointer hover:text-white">
-                📢 {runningText} • Silakan hubungi Panitia P2KD Desa Kalisalak untuk konfirmasi data atau bantuan layanan •
-              </span>
+            <div className="flex-1 overflow-hidden relative">
+              <div className="animate-marquee-seamless font-medium text-amber-200 text-xs tracking-wide cursor-pointer hover:text-white">
+                <span className="inline-flex items-center gap-2 pr-12 shrink-0">
+                  📢 {runningText} • Silakan hubungi Panitia P2KD Desa Kalisalak untuk konfirmasi data atau bantuan layanan •
+                </span>
+                <span className="inline-flex items-center gap-2 pr-12 shrink-0">
+                  📢 {runningText} • Silakan hubungi Panitia P2KD Desa Kalisalak untuk konfirmasi data atau bantuan layanan •
+                </span>
+                <span className="inline-flex items-center gap-2 pr-12 shrink-0">
+                  📢 {runningText} • Silakan hubungi Panitia P2KD Desa Kalisalak untuk konfirmasi data atau bantuan layanan •
+                </span>
+                <span className="inline-flex items-center gap-2 pr-12 shrink-0">
+                  📢 {runningText} • Silakan hubungi Panitia P2KD Desa Kalisalak untuk konfirmasi data atau bantuan layanan •
+                </span>
+              </div>
             </div>
           </div>
         </div>
