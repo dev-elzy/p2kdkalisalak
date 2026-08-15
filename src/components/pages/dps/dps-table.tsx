@@ -1,0 +1,184 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { Card } from "@/components/ui/card";
+import { Badge, Input, Logo, PaginationControl } from "@/components/ui";
+import { Search, Download, MapPin, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+
+interface DpsRow {
+  id: string | number;
+  rw: string;
+  dusun: string;
+  tps: string;
+  lokasi: string;
+  jmlPemilih: number;
+  laki: number;
+  perempuan: number;
+}
+
+interface ApiTpsStat {
+  nomorTps: string;
+  namaTps: string;
+  lokasi: string;
+  total: number;
+  laki: number;
+  perempuan: number;
+}
+
+export const DpsTable: React.FC = () => {
+  const [dpsList, setDpsList] = useState<DpsRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const toast = useToast();
+
+  useEffect(() => {
+    const fetchDpsData = async () => {
+      try {
+        const res = await fetch("/api/stats");
+        const json = await res.json();
+        if (json.success && json.data?.tpsStats) {
+          const rows: DpsRow[] = json.data.tpsStats.map((t: ApiTpsStat, idx: number) => ({
+            id: idx + 1,
+            rw: `RW 0${t.nomorTps.slice(-1)}`,
+            dusun: "Desa Kalisalak",
+            tps: `TPS ${t.nomorTps}`,
+            lokasi: t.lokasi,
+            jmlPemilih: t.total,
+            laki: t.laki,
+            perempuan: t.perempuan,
+          }));
+          setDpsList(rows);
+        }
+      } catch (err) {
+        console.error("Gagal mengambil data DPS:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDpsData();
+    const interval = setInterval(() => {
+      fetchDpsData();
+    }, 6000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const filtered = dpsList.filter(
+    (item) =>
+      item.rw.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.dusun.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.tps.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.lokasi.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const startIdx = (currentPage - 1) * pageSize;
+  const pagedList = filtered.slice(startIdx, startIdx + pageSize);
+
+  const handleExport = () => {
+    toast.info("Mengunduh Rekap DPS", "File rekapitulasi DPS Pilkades Kalisalak sedang disiapkan.");
+  };
+
+  const totalDps = dpsList.reduce((acc, curr) => acc + curr.jmlPemilih, 0);
+
+  return (
+    <div className="space-y-6 max-w-5xl mx-auto">
+      {/* Header */}
+      <div className="text-center">
+        <div className="flex justify-center mb-3">
+          <Logo size="md" />
+        </div>
+        <Badge variant="primary" className="mb-2">Rekapitulasi Resmi P2KD</Badge>
+        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+          Daftar Pemilih Sementara (DPS) Pilkades Kalisalak
+        </h1>
+        <p className="text-sm text-slate-500 mt-2">
+          Desa Kalisalak, Kecamatan Margasari, Kabupaten Tegal • Total DPS: <strong>{totalDps.toLocaleString("id-ID")} Pemilih</strong>
+        </p>
+      </div>
+
+      {/* Filter and Table */}
+      <Card className="p-6">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+          <div className="w-full sm:w-72">
+            <Input
+              icon={<Search className="w-4 h-4" />}
+              placeholder="Cari TPS atau RW..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
+
+          <Button variant="outline" size="sm" onClick={handleExport} className="w-full sm:w-auto">
+            <Download className="w-4 h-4 mr-2" />
+            Unduh Berita Acara DPS (PDF)
+          </Button>
+        </div>
+
+        {/* Responsive Table */}
+        <div className="overflow-x-auto rounded-xl border border-slate-200">
+          {loading ? (
+            <div className="py-12 flex items-center justify-center text-slate-500 gap-2">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>Memuat data DPS resmi...</span>
+            </div>
+          ) : (
+            <table className="w-full text-left text-xs text-slate-700">
+              <thead className="bg-slate-100/80 text-slate-800 uppercase text-[10px] font-bold tracking-wider border-b border-slate-200">
+                <tr>
+                  <th className="py-3.5 px-4">TPS</th>
+                  <th className="py-3.5 px-4">Wilayah RW</th>
+                  <th className="py-3.5 px-4">Lokasi TPS</th>
+                  <th className="py-3.5 px-4 text-right">Laki-Laki</th>
+                  <th className="py-3.5 px-4 text-right">Perempuan</th>
+                  <th className="py-3.5 px-4 text-right font-black">Total Pemilih</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {pagedList.map((row) => (
+                  <tr key={row.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="py-3 px-4 font-bold text-blue-900">{row.tps}</td>
+                    <td className="py-3 px-4 font-semibold text-slate-900">
+                      {row.rw} Desa Kalisalak
+                    </td>
+                    <td className="py-3 px-4 flex items-center gap-1.5 font-medium text-slate-600">
+                      <MapPin className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                      <span>{row.lokasi}</span>
+                    </td>
+                    <td className="py-3 px-4 text-right text-slate-600">{row.laki.toLocaleString("id-ID")}</td>
+                    <td className="py-3 px-4 text-right text-slate-600">{row.perempuan.toLocaleString("id-ID")}</td>
+                    <td className="py-3 px-4 text-right font-bold text-emerald-800">
+                      {row.jmlPemilih.toLocaleString("id-ID")}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {filtered.length > 0 && (
+          <div className="mt-4">
+            <PaginationControl
+              currentPage={currentPage}
+              totalItems={filtered.length}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={(sz) => {
+                setPageSize(sz);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+};

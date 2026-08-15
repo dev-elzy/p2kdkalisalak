@@ -1,0 +1,122 @@
+import { NextResponse } from "next/server";
+import { dataStore, MasterPengumuman } from "@/lib/data-store";
+
+export async function GET() {
+  try {
+    await dataStore.ensureSynced();
+    const list = dataStore.getPengumumanList();
+    return NextResponse.json({
+      success: true,
+      data: list,
+    });
+  } catch {
+    return NextResponse.json(
+      { success: false, message: "Gagal memuat daftar pengumuman dari database." },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
+    const { nomor, judul, kategori, tanggal, ringkasan, fileUrl, fileName, fileSize, user } = body;
+
+    if (!nomor || !judul || !kategori) {
+      return NextResponse.json(
+        { success: false, message: "Nomor, judul, dan kategori pengumuman wajib diisi." },
+        { status: 400 }
+      );
+    }
+
+    const created = dataStore.insertPengumuman(
+      {
+        nomor,
+        judul,
+        kategori,
+        tanggal: tanggal || new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
+        ringkasan: ringkasan || "-",
+        fileUrl: fileUrl || "/docs/Tahapan_Pilkades_2027.pdf",
+        fileName: fileName || `${judul.slice(0, 30)}.pdf`,
+        fileSize: fileSize || "Dokumen Resmi PDF",
+      },
+      user || "Admin P2KD"
+    );
+
+    return NextResponse.json({
+      success: true,
+      message: "Pengumuman berhasil ditambahkan ke database.",
+      data: created,
+    });
+  } catch {
+    return NextResponse.json(
+      { success: false, message: "Gagal menambahkan pengumuman ke database." },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(req: Request) {
+  try {
+    const body = await req.json();
+    const { id, data, user } = body as { id: string; data: Partial<MasterPengumuman>; user?: string };
+
+    if (!id || !data) {
+      return NextResponse.json(
+        { success: false, message: "ID dan data pengumuman wajib disertakan." },
+        { status: 400 }
+      );
+    }
+
+    const updated = dataStore.updatePengumuman(id, data, user || "Admin P2KD");
+    if (!updated) {
+      return NextResponse.json(
+        { success: false, message: "Pengumuman tidak ditemukan." },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Pengumuman berhasil diperbarui di database.",
+      data: updated,
+    });
+  } catch {
+    return NextResponse.json(
+      { success: false, message: "Gagal memperbarui pengumuman." },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const body = await req.json();
+    const { id, user } = body as { id: string; user?: string };
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "ID pengumuman wajib disertakan." },
+        { status: 400 }
+      );
+    }
+
+    const success = dataStore.deletePengumuman(id, user || "Admin P2KD");
+    if (!success) {
+      return NextResponse.json(
+        { success: false, message: "Pengumuman tidak ditemukan." },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Pengumuman berhasil dihapus dari database.",
+    });
+  } catch {
+    return NextResponse.json(
+      { success: false, message: "Gagal menghapus pengumuman dari database." },
+      { status: 500 }
+    );
+  }
+}
