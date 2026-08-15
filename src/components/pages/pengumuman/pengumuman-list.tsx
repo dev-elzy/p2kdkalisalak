@@ -3,9 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge, Logo, Input } from "@/components/ui";
-import { Calendar, Download, FileText, CheckCircle2, ExternalLink, Loader2, Search } from "lucide-react";
+import { Calendar, FileText, CheckCircle2, ExternalLink, Loader2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 import { MasterPengumuman } from "@/lib/data-store";
 
 interface PengumumanListProps {
@@ -13,7 +12,6 @@ interface PengumumanListProps {
 }
 
 export const PengumumanList: React.FC<PengumumanListProps> = ({ initialData = [] }) => {
-  const toast = useToast();
   const [pengumumanList, setPengumumanList] = useState<MasterPengumuman[]>(initialData);
   const [loading, setLoading] = useState(initialData.length === 0);
   const [query, setQuery] = useState("");
@@ -36,20 +34,6 @@ export const PengumumanList: React.FC<PengumumanListProps> = ({ initialData = []
       active = false;
     };
   }, []);
-
-  const handleDownloadDoc = (item: MasterPengumuman) => {
-    toast.success("Mengunduh Dokumen", `Mengunduh ${item.fileName} (${item.fileSize})`);
-    
-    // Create an anchor and trigger immediate browser download
-    const link = document.createElement("a");
-    link.href = item.fileUrl;
-    link.download = item.fileName;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   const filtered = pengumumanList.filter(
     (item) =>
@@ -126,27 +110,17 @@ export const PengumumanList: React.FC<PengumumanListProps> = ({ initialData = []
                     href={item.fileUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 sm:flex-none"
+                    className="w-full sm:w-auto"
                   >
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full text-xs font-bold text-slate-700 hover:text-blue-700 rounded-xl"
+                      className="w-full sm:w-auto text-xs font-bold text-blue-900 hover:bg-blue-50 border-blue-200 rounded-xl shadow-xs"
                     >
-                      <ExternalLink className="w-3.5 h-3.5 mr-1" />
-                      <span>Buka di Tab Baru</span>
+                      <ExternalLink className="w-3.5 h-3.5 mr-1.5 text-blue-700" />
+                      <span>Buka Dokumen di Tab Baru</span>
                     </Button>
                   </a>
-
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => handleDownloadDoc(item)}
-                    className="flex-1 sm:flex-none text-xs font-bold bg-blue-900 hover:bg-blue-800 text-white rounded-xl shadow-xs"
-                  >
-                    <Download className="w-3.5 h-3.5 mr-1.5" />
-                    <span>Unduh PDF</span>
-                  </Button>
                 </div>
               </div>
             </Card>

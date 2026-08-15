@@ -410,7 +410,7 @@ export const Navbar: React.FC = () => {
 
           {/* Action CTAs */}
           <div className="flex items-center gap-3">
-            <Link href="/cek-pemilih">
+            <Link href="/cek-pemilih" className="hidden sm:inline-flex">
               <Button
                 variant="primary"
                 size="sm"

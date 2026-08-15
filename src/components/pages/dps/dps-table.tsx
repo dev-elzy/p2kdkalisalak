@@ -3,9 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge, Input, Logo, PaginationControl } from "@/components/ui";
-import { Search, Download, MapPin, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { Search, MapPin, Loader2 } from "lucide-react";
 
 interface DpsRow {
   id: string | number;
@@ -33,7 +31,6 @@ export const DpsTable: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  const toast = useToast();
 
   useEffect(() => {
     const fetchDpsData = async () => {
@@ -79,10 +76,6 @@ export const DpsTable: React.FC = () => {
   const startIdx = (currentPage - 1) * pageSize;
   const pagedList = filtered.slice(startIdx, startIdx + pageSize);
 
-  const handleExport = () => {
-    toast.info("Mengunduh Rekap DPS", "File rekapitulasi DPS Pilkades Kalisalak sedang disiapkan.");
-  };
-
   const totalDps = dpsList.reduce((acc, curr) => acc + curr.jmlPemilih, 0);
 
   return (
@@ -104,22 +97,18 @@ export const DpsTable: React.FC = () => {
       {/* Filter and Table */}
       <Card className="p-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-          <div className="w-full sm:w-72">
+          <div className="w-full sm:max-w-md">
             <Input
-              icon={<Search className="w-4 h-4" />}
+              icon={<Search className="w-4 h-4 text-slate-400" />}
               placeholder="Cari TPS atau RW..."
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
+              className="rounded-2xl py-2.5 border-slate-300 text-xs"
             />
           </div>
-
-          <Button variant="outline" size="sm" onClick={handleExport} className="w-full sm:w-auto">
-            <Download className="w-4 h-4 mr-2" />
-            Unduh Berita Acara DPS (PDF)
-          </Button>
         </div>
 
         {/* Responsive Table */}
