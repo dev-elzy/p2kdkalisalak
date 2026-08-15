@@ -837,6 +837,35 @@ export class SupabaseDbService {
     }
   }
 
+  public static async fetchPengumuman(): Promise<MasterPengumuman[]> {
+    try {
+      const client = this.adminClient;
+      const { data, error } = await client
+        .from("pengumuman")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error || !data) return [];
+
+      return (data as SupabasePengumumanRow[]).map((p) => ({
+        id: p.id,
+        nomor: p.nomor,
+        judul: p.judul,
+        kategori: p.kategori,
+        tanggal: p.tanggal,
+        ringkasan: p.ringkasan,
+        fileUrl: p.file_url,
+        fileName: p.file_name,
+        fileSize: p.file_size,
+        createdAt: p.created_at || undefined,
+        updatedAt: p.updated_at || undefined,
+      }));
+    } catch (err) {
+      console.warn("Supabase fetchPengumuman query failed:", err);
+      return [];
+    }
+  }
+
   public static async saveWebConfig(data: PublicWebConfig) {
     try {
       await this.adminClient.from("web_config").upsert({

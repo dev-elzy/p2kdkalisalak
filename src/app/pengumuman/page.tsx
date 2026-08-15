@@ -1,7 +1,7 @@
 import React from "react";
 import { Navbar, Footer } from "@/components/layout";
 import { PengumumanList } from "@/components/pages/pengumuman/pengumuman-list";
-import { dataStore } from "@/lib/data-store";
+import { SupabaseDbService } from "@/lib/supabase-db";
 
 export const metadata = {
   title: "Pengumuman Resmi | Kabupaten Tegal",
@@ -11,8 +11,7 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function PengumumanPage() {
-  await dataStore.ensureSynced().catch(() => {});
-  const initialData = dataStore.getPengumumanList();
+  const initialData = await SupabaseDbService.fetchPengumuman();
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">

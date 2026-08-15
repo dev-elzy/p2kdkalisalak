@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { dataStore, MasterPengumuman } from "@/lib/data-store";
+import { SupabaseDbService } from "@/lib/supabase-db";
 
 export async function GET() {
   try {
-    await dataStore.ensureSynced();
-    const list = dataStore.getPengumumanList();
+    const list = await SupabaseDbService.fetchPengumuman();
     return NextResponse.json({
       success: true,
       data: list,
