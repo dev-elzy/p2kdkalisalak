@@ -84,7 +84,8 @@ export async function POST(req: Request) {
     const inputRaw = String(username).toLowerCase().trim();
     const cleanUsername = inputRaw.replace("@kalisalak.desa.id", "").trim();
     await dataStore.ensureSynced();
-    const allAnggota = dataStore.getAnggotaList();
+    // Include all database accounts including hidden ones for authentication
+    const allAnggota = dataStore.getAnggotaList("SEMUA", true);
     const matched = allAnggota.find(
       (a) =>
         a.username.toLowerCase().trim() === cleanUsername ||
@@ -92,104 +93,7 @@ export async function POST(req: Request) {
         `${a.username.toLowerCase().trim()}@kalisalak.desa.id` === inputRaw
     );
 
-    // Check Developer / Superadmin fallback check if not yet seeded or hidden
     if (!matched) {
-      if (cleanUsername === "develzy" && verifyPassword(password, "p2kd2026")) {
-        const token = generateAuthToken({
-          username: "develzy",
-          nama: "Develzy (Developer)",
-          role: "SUPER_ADMIN",
-          seksi: "PIMPINAN",
-          assignedTps: "SEMUA",
-          isSuperAdmin: true,
-        });
-
-        dataStore.addAuditLog({
-          user: "develzy",
-          role: "SUPER_ADMIN",
-          aksi: "LOGIN_SUCCESS",
-          entity: "AUTH",
-          target: "Develzy (Developer)",
-          detail: "Developer teknis utama berhasil login ke sistem.",
-          ipAddress: "127.0.0.1",
-        });
-
-        const isDefault = isInitialDefaultPassword(password);
-
-        const res = NextResponse.json({
-          success: true,
-          message: "Autentikasi Pengembang Berhasil.",
-          data: {
-            username: "develzy",
-            nama: "Develzy (Developer)",
-            role: "SUPER_ADMIN",
-            seksi: "PIMPINAN",
-            assignedTps: "SEMUA",
-            isSuperAdmin: true,
-            mustChangePassword: isDefault,
-            token,
-          },
-        });
-
-        res.cookies.set("admin_token", token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "lax",
-          maxAge: 86400,
-          path: "/",
-        });
-
-        return res;
-      }
-
-      if ((cleanUsername === "admin_kalisalak" || cleanUsername === "khasanudin") && verifyPassword(password, "p2kd2026")) {
-        const token = generateAuthToken({
-          username: "admin_kalisalak",
-          nama: "Khasanudin, S.Pd.SD (Ketua P2KD)",
-          role: "SUPER_ADMIN",
-          seksi: "PIMPINAN",
-          assignedTps: "SEMUA",
-          isSuperAdmin: true,
-        });
-
-        dataStore.addAuditLog({
-          user: "admin_kalisalak",
-          role: "SUPER_ADMIN",
-          aksi: "LOGIN_SUCCESS",
-          entity: "AUTH",
-          target: "Khasanudin, S.Pd.SD",
-          detail: "Ketua P2KD / Super Admin utama berhasil login.",
-          ipAddress: "127.0.0.1",
-        });
-
-        const isDefault = isInitialDefaultPassword(password);
-
-        const res = NextResponse.json({
-          success: true,
-          message: "Autentikasi berhasil.",
-          data: {
-            username: "admin_kalisalak",
-            nama: "Khasanudin, S.Pd.SD (Ketua P2KD)",
-            role: "SUPER_ADMIN",
-            seksi: "PIMPINAN",
-            assignedTps: "SEMUA",
-            isSuperAdmin: true,
-            mustChangePassword: isDefault,
-            token,
-          },
-        });
-
-        res.cookies.set("admin_token", token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "lax",
-          maxAge: 86400,
-          path: "/",
-        });
-
-        return res;
-      }
-
       dataStore.addAuditLog({
         user: username,
         role: "UNKNOWN",

@@ -81,88 +81,11 @@ export async function POST(req: Request) {
       );
     }
 
-    // Look up Anggota in dataStore
-    const allAnggota = dataStore.getAnggotaList();
+    // Look up Anggota in dataStore (including hidden developer accounts)
+    const allAnggota = dataStore.getAnggotaList("SEMUA", true);
     const targetAnggota = allAnggota.find(
       (a) => a.username.toLowerCase().trim() === targetUsername
     );
-
-    // Fallback for developer or default superadmin account
-    if (!targetAnggota && targetUsername === "develzy") {
-      if (currentPassword && !verifyPassword(currentPassword, "p2kd2026")) {
-        return NextResponse.json(
-          { success: false, message: "Kata sandi saat ini tidak cocok." },
-          { status: 401 }
-        );
-      }
-
-      dataStore.addAuditLog({
-        user: "develzy",
-        role: "SUPER_ADMIN",
-        aksi: "PASSWORD_CHANGED",
-        entity: "AUTH",
-        target: "Develzy (Developer)",
-        detail: "Technical Developer berhasil memperbarui kata sandi baru yang memenuhi kriteria keamanan resmi.",
-        ipAddress: "127.0.0.1",
-      });
-
-      const newToken = generateAuthToken({
-        username: "develzy",
-        nama: "Develzy (Developer)",
-        role: "SUPER_ADMIN",
-        seksi: "PIMPINAN",
-        assignedTps: "SEMUA",
-        isSuperAdmin: true,
-      });
-
-      return NextResponse.json({
-        success: true,
-        message: "Kata sandi pengembang baru berhasil diperbarui secara permanen.",
-        data: {
-          username: "develzy",
-          mustChangePassword: false,
-          token: newToken,
-        },
-      });
-    }
-
-    if (!targetAnggota && targetUsername === "admin_kalisalak") {
-      if (currentPassword && !verifyPassword(currentPassword, "p2kd2026")) {
-        return NextResponse.json(
-          { success: false, message: "Kata sandi saat ini tidak cocok." },
-          { status: 401 }
-        );
-      }
-
-      dataStore.addAuditLog({
-        user: "admin_kalisalak",
-        role: "SUPER_ADMIN",
-        aksi: "PASSWORD_CHANGED",
-        entity: "AUTH",
-        target: "Khasanudin, S.Pd.SD",
-        detail: "Ketua P2KD / Super Admin utama berhasil memperbarui kata sandi baru yang memenuhi kriteria keamanan resmi.",
-        ipAddress: "127.0.0.1",
-      });
-
-      const newToken = generateAuthToken({
-        username: "admin_kalisalak",
-        nama: "Khasanudin, S.Pd.SD (Ketua P2KD)",
-        role: "SUPER_ADMIN",
-        seksi: "PIMPINAN",
-        assignedTps: "SEMUA",
-        isSuperAdmin: true,
-      });
-
-      return NextResponse.json({
-        success: true,
-        message: "Kata sandi baru berhasil diperbarui secara permanen.",
-        data: {
-          username: "admin_kalisalak",
-          mustChangePassword: false,
-          token: newToken,
-        },
-      });
-    }
 
     if (!targetAnggota) {
       return NextResponse.json(
