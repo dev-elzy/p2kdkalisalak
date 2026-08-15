@@ -8,10 +8,14 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { MasterPengumuman } from "@/lib/data-store";
 
-export const PengumumanList: React.FC = () => {
+interface PengumumanListProps {
+  initialData?: MasterPengumuman[];
+}
+
+export const PengumumanList: React.FC<PengumumanListProps> = ({ initialData = [] }) => {
   const toast = useToast();
-  const [pengumumanList, setPengumumanList] = useState<MasterPengumuman[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [pengumumanList, setPengumumanList] = useState<MasterPengumuman[]>(initialData);
+  const [loading, setLoading] = useState(initialData.length === 0);
   const [query, setQuery] = useState("");
 
   useEffect(() => {
@@ -19,7 +23,7 @@ export const PengumumanList: React.FC = () => {
     fetch("/api/pengumuman")
       .then((res) => res.json())
       .then((json) => {
-        if (active && json.success && Array.isArray(json.data)) {
+        if (active && json.success && Array.isArray(json.data) && json.data.length > 0) {
           setPengumumanList(json.data);
         }
       })

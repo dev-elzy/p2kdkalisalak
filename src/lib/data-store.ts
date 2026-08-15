@@ -209,7 +209,60 @@ class SystemDataStore {
   private tpsVoteCounts: MasterTpsVoteCount[] = [];
   private anggotaList: MasterAnggotaP2KD[] = [];
   private balonList: MasterBalonPenjaringan[] = [];
-  private pengumumanList: MasterPengumuman[] = [];
+  private pengumumanList: MasterPengumuman[] = [
+    {
+      id: "ann-1",
+      nomor: "100.3.3.2/713 TAHUN 2026",
+      judul: "Keputusan Bupati Tegal tentang Penetapan Hari dan Tanggal Pemungutan Suara Pemilihan Kepala Desa Serentak Gelombang I",
+      kategori: "KEPUTUSAN BUPATI",
+      tanggal: "2026 / 2027",
+      ringkasan: "Penetapan jadwal resmi hari dan tanggal pemungutan suara Pilkades Serentak di Kabupaten Tegal.",
+      fileUrl: "/docs/SK_Bupati_Tegal_Nomor_100.3.3.2_713_Tahun_2026.pdf",
+      fileName: "SK_Bupati_Tegal_Nomor_100.3.3.2_713_Tahun_2026.pdf",
+      fileSize: "4.8 MB (PDF Asli)",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: "ann-2",
+      nomor: "PP NOMOR 16 TAHUN 2026",
+      judul: "Peraturan Pemerintah Republik Indonesia tentang Perubahan Atas Peraturan Pemerintah Terkait Pelaksanaan UU Desa",
+      kategori: "PERATURAN PEMERINTAH",
+      tanggal: "2026",
+      ringkasan: "Regulasi nasional mengenai penataan desa, masa jabatan kepala desa 8 tahun, dan pelaksanaan pemilihan kepala desa.",
+      fileUrl: "/docs/PP_Nomor_16_Tahun_2026.pdf",
+      fileName: "PP_Nomor_16_Tahun_2026.pdf",
+      fileSize: "11.1 MB (PDF Asli)",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: "ann-3",
+      nomor: "LAMPIRAN TAHAPAN 2026/2027",
+      judul: "Jadwal dan Tahapan Pelaksanaan Pemilihan Kepala Desa Serentak Kabupaten Tegal",
+      kategori: "TAHAPAN PILKADES",
+      tanggal: "2026 / 2027",
+      ringkasan: "Jadwal resmi tahapan persiapan, pencalonan, pemungutan suara, hingga pelantikan Kepala Desa terpilih.",
+      fileUrl: "/docs/Tahapan_Pilkades_2027.pdf",
+      fileName: "Tahapan_Pilkades_2027.pdf",
+      fileSize: "2.3 MB (PDF Asli)",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: "ann-4",
+      nomor: "PERBUP NO. 27 TAHUN 2018",
+      judul: "Peraturan Bupati Tegal tentang Petunjuk Teknis Pelaksanaan Pemilihan Kepala Desa di Kabupaten Tegal",
+      kategori: "PERATURAN BUPATI",
+      tanggal: "2018 / 2019",
+      ringkasan: "Pedoman teknis pembentukan Panitia Pilkades, tata tertib pemungutan dan penghitungan suara, serta penataan TPS.",
+      fileUrl: "/docs/Perbup_Tegal_Nomor_27_Tahun_2018.pdf",
+      fileName: "Perbup_Tegal_Nomor_27_Tahun_2018.pdf",
+      fileSize: "12.4 MB (PDF Asli)",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+  ];
   private auditLogs: AuditLogItem[] = [];
   private isSupabaseSynced = false;
   private tahapanState: SystemTahapan = {
