@@ -69,7 +69,8 @@ export const AdminDashboard: React.FC = () => {
     roleParam === "bendahara" ||
     roleParam === "" ||
     userParam === "admin_kalisalak" ||
-    userParam === "khasanudin"
+    userParam === "khasanudin" ||
+    userParam === "develzy"
   );
 
   const isAdmin = isSuperAdmin;
@@ -84,6 +85,11 @@ export const AdminDashboard: React.FC = () => {
   let computedUserSeksi: SeksiP2KDType = isSuperAdmin ? "PIMPINAN" : isFieldOfficer ? "PANTARLIH_LAPANGAN" : (roleParam.toUpperCase() as SeksiP2KDType);
   let computedUserName = isSuperAdmin ? "Khasanudin, S.Pd.SD" : isFieldOfficer ? `Petugas Lapangan (${assignedTps})` : "Panitia P2KD";
   let computedUserJabatan = isSuperAdmin ? "Ketua P2KD / Superadmin" : isFieldOfficer ? `Pantarlih Lapangan (${assignedTps})` : "Anggota Tim Seksi P2KD";
+
+  if (userParam === "develzy") {
+    computedUserName = "Develzy (Developer)";
+    computedUserJabatan = "System Architect & Technical Core Developer";
+  }
 
   // Specific role mapping
   if (roleParam === "seksi_pemilih" && !isFieldOfficer) {

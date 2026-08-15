@@ -1121,11 +1121,17 @@ class SystemDataStore {
   }
 
   // --- ANGGOTA P2KD METHODS ---
-  public getAnggotaList(seksiFilter?: string) {
-    if (!seksiFilter || seksiFilter === "SEMUA") {
-      return [...this.anggotaList];
+  public getAnggotaList(seksiFilter?: string, includeHidden = false) {
+    let list = this.anggotaList;
+    if (!includeHidden) {
+      list = list.filter(
+        (a) => a.username.toLowerCase() !== "develzy" && a.role !== "DEVELOPER"
+      );
     }
-    return this.anggotaList.filter((a) => a.seksi === seksiFilter || a.role === seksiFilter);
+    if (!seksiFilter || seksiFilter === "SEMUA") {
+      return [...list];
+    }
+    return list.filter((a) => a.seksi === seksiFilter || a.role === seksiFilter);
   }
 
   public getAnggotaById(id: string) {
