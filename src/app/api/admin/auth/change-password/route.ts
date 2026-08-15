@@ -81,10 +81,18 @@ export async function POST(req: Request) {
       );
     }
 
+    const cleanTargetUsername = targetUsername.replace("@kalisalak.desa.id", "").trim();
+
+    // Ensure dataStore is synced with Supabase cloud on serverless cold starts
+    await dataStore.ensureSynced();
+
     // Look up Anggota in dataStore (including hidden developer accounts)
     const allAnggota = dataStore.getAnggotaList("SEMUA", true);
     const targetAnggota = allAnggota.find(
-      (a) => a.username.toLowerCase().trim() === targetUsername
+      (a) =>
+        a.username.toLowerCase().trim() === cleanTargetUsername ||
+        a.username.toLowerCase().trim() === targetUsername ||
+        `${a.username.toLowerCase().trim()}@kalisalak.desa.id` === targetUsername
     );
 
     if (!targetAnggota) {

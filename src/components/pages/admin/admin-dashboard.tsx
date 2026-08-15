@@ -1131,7 +1131,7 @@ export const AdminDashboard: React.FC = () => {
       <ModalForceChangePassword
         isOpen={showChangePasswordModal}
         isForced={isForcedChangePassword}
-        username={computedUserRole === "SUPER_ADMIN" ? "admin_kalisalak" : (userParam || "panitia_kalisalak")}
+        username={userParam || currentUser || "admin_kalisalak"}
         namaLengkap={computedUserName}
         onSuccess={() => {
           setShowChangePasswordModal(false);
