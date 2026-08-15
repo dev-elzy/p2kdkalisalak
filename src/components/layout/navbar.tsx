@@ -126,11 +126,14 @@ const menuCategories: Record<string, MenuCategory> = {
   },
 };
 
+const DEFAULT_RUNNING_TEXT =
+  "Pemberitahuan Resmi P2KD: Seluruh rangkaian pemungutan dan penghitungan suara Pilkades Desa Kalisalak dipusatkan di LAPANGAN DESA KALISALAK pada hari Rabu, 3 Februari 2027. Mohon membawa KTP-el dan Undangan Memilih.";
+
 export const Navbar: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [runningText, setRunningText] = useState<string | null>(null);
-  const [isRunningActive, setIsRunningActive] = useState(false);
+  const [runningText, setRunningText] = useState<string>(DEFAULT_RUNNING_TEXT);
+  const [isRunningActive, setIsRunningActive] = useState(true);
   const pathname = usePathname();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -140,8 +143,8 @@ export const Navbar: React.FC = () => {
         const res = await fetch("/api/config");
         const json = await res.json();
         if (json.success && json.data) {
-          setRunningText(json.data.runningText);
-          setIsRunningActive(json.data.isRunningTextActive);
+          if (json.data.runningText) setRunningText(json.data.runningText);
+          setIsRunningActive(Boolean(json.data.isRunningTextActive));
         }
       } catch {
         // quiet fallback
