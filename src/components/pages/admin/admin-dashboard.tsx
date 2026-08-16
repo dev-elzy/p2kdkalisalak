@@ -553,9 +553,14 @@ export const AdminDashboard: React.FC = () => {
   const handlePromoteToDpt = async (ids: string[]) => {
     if (!ids || ids.length === 0) return;
     try {
-      // Optimistic UI update
+      // Optimistic instant UI update in 0ms
       setVoters((prev) =>
         prev.map((v) => (ids.includes(v.id) ? { ...v, tahap: "DPT" } : v))
+      );
+
+      toast.success(
+        "Verifikasi Masuk DPT",
+        `${ids.length} data pemilih langsung dipindahkan ke DPT.`
       );
 
       const res = await fetch("/api/admin/pemilih/promosi-dpt", {
@@ -564,13 +569,8 @@ export const AdminDashboard: React.FC = () => {
         body: JSON.stringify({ ids, targetTahap: "DPT", user: currentUser }),
       });
       const result = await res.json();
-      if (result.success) {
-        toast.success(
-          "Verifikasi Masuk DPT Berhasil",
-          `${result.count} data pemilih telah dipindahkan dari DPS ke DPT.`
-        );
-      } else {
-        toast.error("Gagal Verifikasi", result.message || "Tidak dapat memindahkan data.");
+      if (!result.success) {
+        toast.error("Gagal Sinkronisasi", result.message || "Tidak dapat memindahkan data di server.");
         fetchData();
       }
     } catch {
@@ -582,9 +582,14 @@ export const AdminDashboard: React.FC = () => {
   const handleRollbackToDps = async (ids: string[]) => {
     if (!ids || ids.length === 0) return;
     try {
-      // Optimistic UI update
+      // Optimistic instant UI update in 0ms
       setVoters((prev) =>
         prev.map((v) => (ids.includes(v.id) ? { ...v, tahap: "DPS" } : v))
+      );
+
+      toast.warning(
+        "Dikembalikan ke DPS",
+        `${ids.length} data pemilih dikembalikan ke DPS untuk perbaikan.`
       );
 
       const res = await fetch("/api/admin/pemilih/promosi-dpt", {
@@ -593,13 +598,8 @@ export const AdminDashboard: React.FC = () => {
         body: JSON.stringify({ ids, targetTahap: "DPS", user: currentUser }),
       });
       const result = await res.json();
-      if (result.success) {
-        toast.warning(
-          "Dikembalikan ke DPS",
-          `${result.count} data pemilih dikembalikan ke DPS untuk perbaikan.`
-        );
-      } else {
-        toast.error("Gagal", result.message || "Tidak dapat mengembalikan data.");
+      if (!result.success) {
+        toast.error("Gagal", result.message || "Tidak dapat mengembalikan data di server.");
         fetchData();
       }
     } catch {
