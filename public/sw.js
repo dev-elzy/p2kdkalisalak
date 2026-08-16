@@ -1,7 +1,21 @@
-const CACHE_NAME = "p2kd-kalisalak-v1";
+const CACHE_NAME = "p2kd-kalisalak-v2";
+const PRECACHE_ASSETS = [
+  "/icon-192x192.png",
+  "/icon-512x512.png",
+  "/apple-touch-icon.png",
+  "/logo.svg",
+  "/manifest.json",
+];
 
-self.addEventListener("install", () => {
+self.addEventListener("install", (event) => {
   self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(PRECACHE_ASSETS).catch((err) => {
+        console.warn("Precache skipped for some assets:", err);
+      });
+    })
+  );
 });
 
 self.addEventListener("activate", (event) => {
@@ -24,7 +38,21 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Network-first strategy for smooth updates
+  // Cache-first strategy for icons and static assets to ensure instant PWA loading
+  if (
+    event.request.url.includes(".png") ||
+    event.request.url.includes(".svg") ||
+    event.request.url.includes("/manifest.json")
+  ) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        return cached || fetch(event.request);
+      })
+    );
+    return;
+  }
+
+  // Network-first strategy for live HTML and JS pages
   event.respondWith(
     fetch(event.request).catch(() => caches.match(event.request))
   );
