@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { AnggotaP2KD, SeksiP2KDType, TPSItem } from "../types";
 import { useToast } from "@/hooks/use-toast";
+import { compressImage } from "@/lib/image-compressor";
 
 interface TabAnggotaP2KDProps {
   anggotaList: AnggotaP2KD[];
@@ -194,22 +195,22 @@ export const TabAnggotaP2KD: React.FC<TabAnggotaP2KDProps> = ({
     return `KLS-${rand}`;
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      toast.warning("Ukuran Foto Terlalu Besar", "Maksimal ukuran foto adalah 2MB.");
+    if (file.size > 8 * 1024 * 1024) {
+      toast.warning("Ukuran Foto Terlalu Besar", "Maksimal ukuran foto adalah 8MB.");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (uploadEvent) => {
-      const base64Data = uploadEvent.target?.result as string;
-      setFormData((prev) => ({ ...prev, fotoUrl: base64Data }));
-      toast.success("Foto Terpilih", "Foto profil siap disimpan ke database.");
-    };
-    reader.readAsDataURL(file);
+    try {
+      const compressed = await compressImage(file, { maxWidth: 480, maxHeight: 640, quality: 0.85 });
+      setFormData((prev) => ({ ...prev, fotoUrl: compressed }));
+      toast.success("Foto Berhasil Dimuat", "Foto profil telah dioptimalkan dan siap disimpan.");
+    } catch {
+      toast.error("Gagal Memproses Foto", "Terjadi kesalahan saat memproses gambar.");
+    }
   };
 
   const handleOpenAdd = () => {

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { BalonPenjaringanItem } from "../types";
 import { useToast } from "@/hooks/use-toast";
+import { compressImage } from "@/lib/image-compressor";
 
 interface TabPenjaringanBalonProps {
   balonList: BalonPenjaringanItem[];
@@ -42,31 +43,31 @@ export const TabPenjaringanBalon: React.FC<TabPenjaringanBalonProps> = ({
   const [formData, setFormData] = useState({
     namaLengkap: "",
     nik: "",
-    tempatTanggalLahir: "Tegal, 01 Januari 1980",
-    alamatDomisili: "Desa Kalisalak",
-    pendidikanTerakhir: "Sarjana (S1)",
-    pekerjaan: "Wiraswasta / Pengusaha / Pedagang",
+    tempatTanggalLahir: "Tegal, 12 Mei 1980",
+    alamatDomisili: "Dusun Kalisalak RT 02 / RW 01",
+    pendidikanTerakhir: "S1 Ilmu Pemerintahan",
+    pekerjaan: "Wiraswasta",
     fotoUrl: "",
     tanggalPendaftaran: new Date().toLocaleDateString("id-ID"),
     catatanPenjaringan: "Pendaftaran bakal calon Kepala Desa Kalisalak.",
   });
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 3 * 1024 * 1024) {
-      toast.error("Ukuran Terlalu Besar", "Ukuran foto maksimal 3MB.");
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error("Ukuran Terlalu Besar", "Ukuran file foto maksimal 8MB.");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        setFormData((prev) => ({ ...prev, fotoUrl: reader.result as string }));
-      }
-    };
-    reader.readAsDataURL(file);
+    try {
+      const compressed = await compressImage(file, { maxWidth: 480, maxHeight: 640, quality: 0.85 });
+      setFormData((prev) => ({ ...prev, fotoUrl: compressed }));
+      toast.success("Foto Berhasil Dimuat", "Foto pasfoto bakal calon telah dioptimalkan.");
+    } catch {
+      toast.error("Gagal Memproses Foto", "Terjadi kesalahan saat memproses gambar.");
+    }
   };
 
   // Checklist State for Verify Modal

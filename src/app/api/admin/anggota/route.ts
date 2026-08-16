@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { dataStore } from "@/lib/data-store";
+import { SupabaseDbService } from "@/lib/supabase-db";
 import { verifyAdminSession } from "@/lib/auth-middleware";
 import { hashPassword } from "@/lib/encryption";
 
@@ -115,6 +116,9 @@ export async function POST(req: Request) {
       user.nama || user.username
     );
 
+    // Synchronously commit to Supabase Cloud
+    await SupabaseDbService.insertAnggota(newAnggota);
+
     return NextResponse.json({
       success: true,
       message: `Anggota ${newAnggota.namaLengkap} (${newAnggota.username}) berhasil didaftarkan. Kata sandi: '${plainPass}'.`,
@@ -167,7 +171,9 @@ export async function PUT(req: Request) {
           { status: 404 }
         );
       }
-      dataStore.updateAnggota(id, { passwordHash: hashPassword(resetRes.defaultPassword) }, userName);
+      const resetHash = hashPassword(resetRes.defaultPassword);
+      dataStore.updateAnggota(id, { passwordHash: resetHash }, userName);
+      await SupabaseDbService.updateAnggota(id, { passwordHash: resetHash });
 
       return NextResponse.json({
         success: true,
@@ -195,6 +201,7 @@ export async function PUT(req: Request) {
 
       const passwordHash = hashPassword(newPassword);
       dataStore.updateAnggota(id, { passwordHash }, userName);
+      await SupabaseDbService.updateAnggota(id, { passwordHash });
 
       dataStore.addAuditLog({
         user: userName,
@@ -225,6 +232,9 @@ export async function PUT(req: Request) {
         { status: 404 }
       );
     }
+
+    // Synchronously commit to Supabase Cloud
+    await SupabaseDbService.updateAnggota(id, updateFields);
 
     return NextResponse.json({
       success: true,
