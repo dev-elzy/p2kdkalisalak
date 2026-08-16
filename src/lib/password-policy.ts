@@ -10,12 +10,18 @@
  */
 
 export const DEFAULT_INITIAL_PASSWORDS = [
+  "p2kd12345",
   "p2kd2026",
+  "p2kd2027",
   "pantarlih123",
   "admin123",
   "password",
   "12345678",
+  "123456789",
+  "p2kd1234",
   "kalisalak2026",
+  "kalisalak2027",
+  "admin_kalisalak",
 ];
 
 export interface PasswordValidationResult {
@@ -65,7 +71,15 @@ export function validatePasswordPolicy(password: string): PasswordValidationResu
 }
 
 export function isInitialDefaultPassword(password: string): boolean {
-  return DEFAULT_INITIAL_PASSWORDS.includes(password.trim());
+  if (!password) return true;
+  const clean = password.trim().toLowerCase();
+  if (DEFAULT_INITIAL_PASSWORDS.some((d) => d.toLowerCase() === clean)) {
+    return true;
+  }
+  if (clean.startsWith("p2kd") && clean.length <= 12) {
+    return true;
+  }
+  return false;
 }
 
 /**

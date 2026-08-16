@@ -185,6 +185,8 @@ export const AdminDashboard: React.FC = () => {
   const [showChangePasswordModal, setShowChangePasswordModal] = useState<boolean>(() => {
     if (typeof window !== "undefined") {
       try {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("force_change") === "true") return true;
         const stored = localStorage.getItem("admin_user_data");
         if (stored) {
           const parsed = JSON.parse(stored);
@@ -199,6 +201,8 @@ export const AdminDashboard: React.FC = () => {
   const [isForcedChangePassword, setIsForcedChangePassword] = useState<boolean>(() => {
     if (typeof window !== "undefined") {
       try {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("force_change") === "true") return true;
         const stored = localStorage.getItem("admin_user_data");
         if (stored) {
           const parsed = JSON.parse(stored);

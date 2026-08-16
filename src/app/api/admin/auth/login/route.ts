@@ -160,7 +160,13 @@ export async function POST(req: Request) {
       ipAddress: "127.0.0.1",
     });
 
-    const isDefault = isInitialDefaultPassword(password) || isInitialDefaultPassword(storedPassword);
+    const isDefault =
+      isInitialDefaultPassword(password) ||
+      isInitialDefaultPassword(storedPassword) ||
+      verifyPassword("p2kd12345", storedPassword) ||
+      verifyPassword("p2kd2026", storedPassword) ||
+      verifyPassword("pantarlih123", storedPassword) ||
+      verifyPassword("admin123", storedPassword);
 
     const response = NextResponse.json({
       success: true,

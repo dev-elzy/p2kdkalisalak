@@ -115,11 +115,12 @@ export const AdminLoginForm: React.FC = () => {
       const targetRole = (data.data.role || "SUPER_ADMIN").toLowerCase();
       const targetTps = data.data.assignedTps || "SEMUA";
       const targetUser = data.data.username;
+      const mustChange = Boolean(data.data.mustChangePassword);
 
       router.push(
         `/admin/dashboard?role=${encodeURIComponent(targetRole)}&tps=${encodeURIComponent(
           targetTps
-        )}&user=${encodeURIComponent(targetUser)}`
+        )}&user=${encodeURIComponent(targetUser)}&force_change=${mustChange ? "true" : "false"}`
       );
     } catch {
       toast.error("Kesalahan Jaringan", "Gagal menghubungi server database resmi P2KD.");
