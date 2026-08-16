@@ -144,12 +144,12 @@ export const TabMasterPemilih: React.FC<TabMasterPemilihProps> = ({
             >
               {isAdmin && (
                 <option value="SEMUA">
-                  Semua TPS ({tpsList.length > 0 ? `${tpsList.length} TPS Terdaftar` : "Belum Ada TPS"})
+                  Semua Wilayah RW ({tpsList.length > 0 ? `${tpsList.length} Wilayah RW` : "13 Wilayah RW"})
                 </option>
               )}
               {tpsList.map((t) => (
-                <option key={t.id} value={t.namaTps}>
-                  {t.namaTps} ({t.lokasi})
+                <option key={t.id} value={t.rw || t.namaTps}>
+                  {t.namaTabung || t.namaTps} ({t.rw || `RW ${t.nomorTps}`})
                 </option>
               ))}
             </select>
@@ -206,7 +206,7 @@ export const TabMasterPemilih: React.FC<TabMasterPemilihProps> = ({
                 <th className="py-3 px-4">NIK (Enkripsi/Plain)</th>
                 <th className="py-3 px-4">Nama Lengkap & JK</th>
                 <th className="py-3 px-4">Wilayah / Domisili</th>
-                <th className="py-3 px-4">Penetapan TPS</th>
+                <th className="py-3 px-4">Meja Pendaftaran</th>
                 <th className="py-3 px-4">Status</th>
                 <th className="py-3 px-4 text-center">Aksi Petugas</th>
               </tr>
@@ -219,28 +219,35 @@ export const TabMasterPemilih: React.FC<TabMasterPemilihProps> = ({
                   </td>
                 </tr>
               ) : (
-                pagedVoters.map((p, idx) => (
-                  <tr key={p.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3 px-4 text-slate-400">{startIdx + idx + 1}</td>
-                    <td className="py-3 px-4 font-mono font-bold text-slate-900">
-                      {p.nik}
-                      <div className="text-[10px] text-slate-400 font-normal">KK: {p.kk || "-"}</div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="font-bold text-slate-900">{p.namaLengkap}</div>
-                      <div className="text-[10px] text-slate-500">
-                        {p.jenisKelamin === "L" ? "Laki-laki" : "Perempuan"} • Lahir: {p.tempatLahir}, {p.tanggalLahir}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div>RT {p.rt} / RW {p.rw}</div>
-                      <div className="text-[10px] text-slate-500">Desa Kalisalak</div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <Badge variant="primary" className="text-[11px] font-bold">
-                        {p.tps}
-                      </Badge>
-                    </td>
+                pagedVoters.map((p, idx) => {
+                  const rtNum = (p.rt || "01").replace(/\D/g, "").padStart(2, "0");
+                  const rwNum = (p.rw || "01").replace(/\D/g, "").padStart(2, "0");
+                  const mejaName = p.tps && p.tps.includes("Meja")
+                    ? p.tps
+                    : `Meja RW ${rwNum}`;
+
+                  return (
+                    <tr key={p.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-3 px-4 text-slate-400">{startIdx + idx + 1}</td>
+                      <td className="py-3 px-4 font-mono font-bold text-slate-900">
+                        {p.nik}
+                        <div className="text-[10px] text-slate-400 font-normal">KK: {p.kk || "-"}</div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="font-bold text-slate-900">{p.namaLengkap}</div>
+                        <div className="text-[10px] text-slate-500">
+                          {p.jenisKelamin === "L" ? "Laki-laki" : "Perempuan"} • Lahir: {p.tempatLahir}, {p.tanggalLahir}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="font-semibold text-slate-900">RT {rtNum} / RW {rwNum}</div>
+                        <div className="text-[10px] text-slate-500">Desa Kalisalak</div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <Badge variant="primary" className="text-[11px] font-bold">
+                          {mejaName}
+                        </Badge>
+                      </td>
                     <td className="py-3 px-4">
                       {p.statusAktif === "AKTIF" ? (
                         <Badge variant="success" className="text-[10px]">
@@ -292,8 +299,8 @@ export const TabMasterPemilih: React.FC<TabMasterPemilihProps> = ({
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
+                );
+              }))}
             </tbody>
           </table>
         </div>

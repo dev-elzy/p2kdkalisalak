@@ -33,12 +33,12 @@ const tabTitles: Record<TabType, { title: string; subtitle: string }> = {
     subtitle: "Penerimaan pendaftaran & verifikasi 8 dokumen persyaratan balon Kepala Desa",
   },
   coklit: {
-    title: "Coklit Lapangan (Pantarlih)",
-    subtitle: "Pencocokan, penelitian, dan checklist stiker door-to-door warga",
+    title: "Coklit Lapangan (Koordinator RW)",
+    subtitle: "Pencocokan, penelitian, dan verifikasi faktual pemilih door-to-door per RW",
   },
   pemilih: {
     title: "Master Data Pemilih (DPS / DPT)",
-    subtitle: "Pencatatan, perubahan status, dan penetapan pemilih seluruh TPS desa",
+    subtitle: "Pencatatan, perubahan status, dan penetapan pemilih 13 Wilayah RW Desa Kalisalak",
   },
   kandidat: {
     title: "Seksi Penyaringan: Calon Kepala Desa & Visi Misi",
@@ -46,11 +46,11 @@ const tabTitles: Record<TabType, { title: string; subtitle: string }> = {
   },
   realcount: {
     title: "Seksi Pemungutan Suara: Real Count Hari-H",
-    subtitle: "Hasil perolehan suara live per TPS & Berita Acara C1 Plano",
+    subtitle: "Hasil perolehan suara live terpusat per Tabung Suara & Berita Acara C1 Plano",
   },
   tps: {
-    title: "Pengaturan Master TPS & Wilayah",
-    subtitle: "Lokasi pemungutan suara, lapangan desa, dan RT/RW binaan",
+    title: "13 Meja Pendaftaran & Wilayah RW",
+    subtitle: "Pusat pemungutan suara Lapangan Desa Kalisalak dan pembagian 13 Meja RW",
   },
   aduan: {
     title: "Aduan & Masukan Masyarakat",

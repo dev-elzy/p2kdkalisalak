@@ -223,8 +223,28 @@ export class SupabaseDbService {
 
       // 1. Fetch TPS
       const { data: tpsData, error: tpsErr } = await client.from("tps").select("*").order("nomor_tps");
-      // 2. Fetch Pemilih (Full 7.787 Records)
-      const { data: pemilihData, error: pemilihErr } = await client.from("pemilih").select("*").order("nama_lengkap").limit(15000);
+      // 2. Fetch Pemilih (Full 7.787 Records via chunked ranges)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let allPemilih: any[] = [];
+      const CHUNK_SIZE = 1000;
+      let offset = 0;
+      while (true) {
+        const { data: chunk, error: chunkErr } = await client
+          .from("pemilih")
+          .select("*")
+          .order("nama_lengkap")
+          .range(offset, offset + CHUNK_SIZE - 1);
+
+        if (chunkErr) {
+          console.error("Error fetching pemilih chunk at offset", offset, chunkErr);
+          break;
+        }
+        if (!chunk || chunk.length === 0) break;
+        allPemilih = allPemilih.concat(chunk);
+        if (chunk.length < CHUNK_SIZE) break;
+        offset += CHUNK_SIZE;
+      }
+      const pemilihData = allPemilih;
       // 3. Fetch Anggota P2KD
       const { data: anggotaData, error: agtErr } = await client.from("anggota_p2kd").select("*");
       // 4. Fetch Balon
@@ -244,8 +264,8 @@ export class SupabaseDbService {
       // 11. Fetch Audit
       const { data: auditData } = await client.from("audit_logs").select("*").order("created_at", { ascending: false }).limit(100);
 
-      if (tpsErr || pemilihErr || agtErr) {
-        console.warn("⚠️ Supabase fetch notice:", { tpsErr, pemilihErr, agtErr });
+      if (tpsErr || agtErr) {
+        console.warn("⚠️ Database fetch notice:", { tpsErr, agtErr });
       }
 
       const tpsList: MasterTPS[] = ((tpsData as SupabaseTpsRow[]) || []).map((t) => ({

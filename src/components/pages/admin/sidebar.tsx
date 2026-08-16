@@ -108,7 +108,7 @@ export const AdminSidebar: React.FC<SidebarProps> = ({
         },
         {
           id: "coklit" as TabType,
-          label: "Coklit Lapangan (Pantarlih)",
+          label: "Coklit Lapangan (PANTARLIH)",
           icon: Sparkles,
           badge: "Coklit",
           badgeColor: "bg-amber-400 text-slate-950 font-black border-amber-300 animate-pulse",
