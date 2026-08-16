@@ -85,11 +85,23 @@ export function hashSearchIndex(value: string): string {
 }
 
 /**
- * Masks NIK for public display (e.g. 3201************01).
+ * Masks NIK for privacy display (1 digit awal, 13 bintang, 2 digit terakhir: e.g. 3*************01).
  */
 export function maskNIK(nik: string): string {
-  if (!nik || nik.length < 8) return "****************";
-  return `${nik.slice(0, 4)}********${nik.slice(-4)}`;
+  if (!nik) return "****************";
+  const clean = String(nik).trim();
+  if (clean.length <= 3) return "****************";
+  return `${clean.slice(0, 1)}*************${clean.slice(-2)}`;
+}
+
+/**
+ * Masks KK for privacy display (1 digit awal, 13 bintang, 2 digit terakhir: e.g. 3*************01).
+ */
+export function maskKK(kk?: string): string {
+  if (!kk) return "-";
+  const clean = String(kk).trim();
+  if (clean.length <= 3) return clean;
+  return `${clean.slice(0, 1)}*************${clean.slice(-2)}`;
 }
 
 /**

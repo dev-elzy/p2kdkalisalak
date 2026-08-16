@@ -231,7 +231,7 @@ export const TabMasterPemilih: React.FC<TabMasterPemilihProps> = ({
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider">
                 <th className="py-3 px-4">No</th>
-                <th className="py-3 px-4">NIK (Enkripsi/Plain)</th>
+                <th className="py-3 px-4">NIK (Sensor Proteksi)</th>
                 <th className="py-3 px-4">Nama Lengkap & JK</th>
                 <th className="py-3 px-4">Wilayah / Domisili</th>
                 <th className="py-3 px-4">Meja Pendaftaran</th>
@@ -253,13 +253,15 @@ export const TabMasterPemilih: React.FC<TabMasterPemilihProps> = ({
                   const mejaName = p.tps && p.tps.includes("Meja")
                     ? p.tps
                     : `Meja RW ${rwNum}`;
+                  const maskedNikDisplay = p.nikMasked || (p.nik ? `${p.nik.slice(0, 1)}*************${p.nik.slice(-2)}` : "****************");
+                  const maskedKkDisplay = p.kk ? `${p.kk.slice(0, 1)}*************${p.kk.slice(-2)}` : "-";
 
                   return (
                     <tr key={p.id} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-3 px-4 text-slate-400">{startIdx + idx + 1}</td>
                       <td className="py-3 px-4 font-mono font-bold text-slate-900">
-                        {p.nik}
-                        <div className="text-[10px] text-slate-400 font-normal">KK: {p.kk || "-"}</div>
+                        {maskedNikDisplay}
+                        <div className="text-[10px] text-slate-400 font-normal">KK: {maskedKkDisplay}</div>
                       </td>
                       <td className="py-3 px-4">
                         <div className="font-bold text-slate-900">{p.namaLengkap}</div>
