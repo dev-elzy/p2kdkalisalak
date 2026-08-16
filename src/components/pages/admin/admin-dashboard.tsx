@@ -219,6 +219,17 @@ export const AdminDashboard: React.FC = () => {
     computedUserJabatan = dbMatchedMember.jabatan;
   }
 
+  // Floating QR Verifier is STRICTLY ONLY for PETUGAS_TPS (PPS / KPPS Meja RW)
+  const isPetugasTpsOnly =
+    !isAdmin &&
+    !isSuperAdmin &&
+    userParam.toLowerCase() !== "develzy" &&
+    (computedUserRole === "PETUGAS_TPS" ||
+      dbMatchedMember?.role === "PETUGAS_TPS" ||
+      userParam.toLowerCase().startsWith("pps") ||
+      roleParam.toLowerCase() === "petugas_tps" ||
+      roleParam.toLowerCase() === "pps");
+
   // Form State for Add / Edit Voter
   const [voterForm, setVoterForm] = useState<VoterFormData>({
     nik: "",
@@ -1285,11 +1296,13 @@ export const AdminDashboard: React.FC = () => {
         }}
       />
 
-      {/* Floating Center C6 QR Verifier Button for Quick Field & PPS Operations */}
-      <FloatingQrVerifier
-        assignedMeja={assignedTps}
-        userName={computedUserName}
-      />
+      {/* Floating Center C6 QR Verifier Button - STRICTLY ONLY FOR PETUGAS_TPS (PPS Meja RW) */}
+      {isPetugasTpsOnly && (
+        <FloatingQrVerifier
+          assignedMeja={assignedTps}
+          userName={computedUserName}
+        />
+      )}
     </div>
   );
 };
