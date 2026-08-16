@@ -209,8 +209,8 @@ export class SupabaseDbService {
 
       // 1. Fetch TPS
       const { data: tpsData, error: tpsErr } = await client.from("tps").select("*").order("nomor_tps");
-      // 2. Fetch Pemilih
-      const { data: pemilihData, error: pemilihErr } = await client.from("pemilih").select("*").order("nama_lengkap");
+      // 2. Fetch Pemilih (Full 7.787 Records)
+      const { data: pemilihData, error: pemilihErr } = await client.from("pemilih").select("*").order("nama_lengkap").limit(15000);
       // 3. Fetch Anggota P2KD
       const { data: anggotaData, error: agtErr } = await client.from("anggota_p2kd").select("*");
       // 4. Fetch Balon
@@ -218,7 +218,7 @@ export class SupabaseDbService {
       // 5. Fetch Kandidat
       const { data: kandidatData } = await client.from("kandidat_kades").select("*").order("nomor_urut");
       // 6. Fetch Real Count
-      const { data: realCountData } = await client.from("tps_vote_count").select("*").order("nomor_tps");
+      const { data: realCountData } = await client.from("tps_vote_counts").select("*").order("nomor_tps");
       // 7. Fetch Aduan
       const { data: aduanData } = await client.from("aduan_pemilih").select("*").order("created_at", { ascending: false });
       // 8. Fetch Tahapan
