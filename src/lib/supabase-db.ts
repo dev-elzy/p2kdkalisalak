@@ -646,6 +646,57 @@ export class SupabaseDbService {
     }
   }
 
+  /**
+   * Cari data pemilih untuk verifikasi scan QR Code C6
+   */
+  public static async findPemilihForC6Verification(id?: string, nik?: string): Promise<MasterPemilih | null> {
+    try {
+      const client = this.adminClient;
+      let query = client.from("pemilih").select("*").limit(1);
+
+      if (id) {
+        query = query.eq("id", id);
+      } else if (nik) {
+        query = query.eq("nik", nik);
+      } else {
+        return null;
+      }
+
+      const { data, error } = await query.maybeSingle();
+      if (error || !data) return null;
+
+      const p = data as SupabasePemilihRow;
+      return {
+        id: p.id,
+        nik: p.nik,
+        nikMasked: p.nik ? `${p.nik.slice(0, 1)}*************${p.nik.slice(-2)}` : "****************",
+        kk: p.no_kk,
+        namaLengkap: p.nama_lengkap,
+        tempatLahir: p.tempat_lahir,
+        tanggalLahir: p.tanggal_lahir,
+        jenisKelamin: String(p.jenis_kelamin || "L").toUpperCase().startsWith("L") ? "L" : "P",
+        statusPerkawinan: (p.status_perkawinan as "B" | "S" | "P") || "S",
+        alamat: p.alamat,
+        rt: p.rt,
+        rw: p.rw,
+        desa: p.desa,
+        kecamatan: p.kecamatan,
+        tps: p.tps,
+        statusAktif: (p.status_aktif as MasterPemilih["statusAktif"]) || "AKTIF",
+        alasanTms: p.alasan_tms || undefined,
+        coklitStatus: (p.coklit_status as MasterPemilih["coklitStatus"]) || "BELUM_COKLIT",
+        coklitTanggal: p.coklit_tanggal || undefined,
+        coklitCatatan: p.coklit_catatan || undefined,
+        coklitPetugas: p.coklit_petugas || undefined,
+        tahap: (p.tahap as "DPS" | "DPT") || "DPS",
+        updatedAt: p.updated_at || new Date().toISOString(),
+      };
+    } catch (err) {
+      console.error("Error finding pemilih for C6 verify:", err);
+      return null;
+    }
+  }
+
   // --- Async Write Operations to Supabase Cloud ---
   public static async insertAnggota(data: MasterAnggotaP2KD) {
     try {

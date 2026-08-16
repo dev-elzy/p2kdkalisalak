@@ -6,3 +6,4 @@ export * from "./card";
 export * from "./input";
 export * from "./logo";
 export * from "./pagination-control";
+export * from "./active-qr-code";
