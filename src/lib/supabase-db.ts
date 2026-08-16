@@ -589,6 +589,63 @@ export class SupabaseDbService {
     }
   }
 
+  /**
+   * Update Status Coklit Pemilih di Supabase Cloud
+   */
+  public static async updateCoklitStatus(
+    voterId: string,
+    status: "SESUAI" | "UBAH_DATA" | "TMS" | "BELUM_COKLIT",
+    catatan = "",
+    petugas = "Koordinator RW"
+  ): Promise<boolean> {
+    try {
+      const todayStr = new Date().toISOString().split("T")[0];
+      const payload: Record<string, unknown> = {
+        coklit_status: status,
+        coklit_tanggal: status === "BELUM_COKLIT" ? null : todayStr,
+        coklit_catatan: catatan || null,
+        coklit_petugas: status === "BELUM_COKLIT" ? null : petugas,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (status === "TMS") {
+        payload.status_aktif = "TMS";
+        payload.alasan_tms = catatan || "Dinyatakan TMS saat Coklit Lapangan";
+      } else if (status === "SESUAI" || status === "UBAH_DATA") {
+        payload.status_aktif = "AKTIF";
+        payload.tahap = "DPT"; // Otomatis promosikan ke DPT
+      }
+
+      const { error } = await this.adminClient
+        .from("pemilih")
+        .update(payload)
+        .eq("id", voterId);
+
+      if (error) {
+        console.error("Supabase updateCoklitStatus error:", error);
+        return false;
+      }
+
+      this.invalidateCache();
+
+      // Audit log
+      await this.adminClient.from("audit_logs").insert({
+        user_name: petugas,
+        role: "KOORDINATOR_RW / PETUGAS",
+        aksi: "COKLIT_STATUS_UPDATE",
+        entity: "PEMILIH",
+        target: voterId,
+        detail: `Status Coklit diubah menjadi ${status}. Catatan: ${catatan || "-"}`,
+        ip_address: "127.0.0.1",
+      });
+
+      return true;
+    } catch (err) {
+      console.error("Exception in updateCoklitStatus:", err);
+      return false;
+    }
+  }
+
   // --- Async Write Operations to Supabase Cloud ---
   public static async insertAnggota(data: MasterAnggotaP2KD) {
     try {

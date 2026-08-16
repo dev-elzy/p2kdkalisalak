@@ -654,6 +654,46 @@ class SystemDataStore {
     return this.pemilihList[idx];
   }
 
+  public updateCoklitStatus(
+    id: string,
+    status: "SESUAI" | "UBAH_DATA" | "TMS" | "BELUM_COKLIT",
+    catatan = "",
+    petugas = "Koordinator RW"
+  ) {
+    const idx = this.pemilihList.findIndex((p) => p.id === id);
+    if (idx === -1) return null;
+
+    const todayStr = new Date().toISOString().split("T")[0];
+    this.pemilihList[idx].coklitStatus = status;
+    this.pemilihList[idx].coklitTanggal = status === "BELUM_COKLIT" ? undefined : todayStr;
+    this.pemilihList[idx].coklitCatatan = catatan || undefined;
+    this.pemilihList[idx].coklitPetugas = status === "BELUM_COKLIT" ? undefined : petugas;
+    this.pemilihList[idx].updatedAt = new Date().toISOString();
+
+    if (status === "TMS") {
+      this.pemilihList[idx].statusAktif = "TMS";
+      this.pemilihList[idx].alasanTms = catatan || "Dinyatakan TMS saat Coklit Lapangan";
+    } else if (status === "SESUAI" || status === "UBAH_DATA") {
+      this.pemilihList[idx].statusAktif = "AKTIF";
+      this.pemilihList[idx].tahap = "DPT";
+    }
+
+    // Sync to Supabase Cloud
+    SupabaseDbService.updateCoklitStatus(id, status, catatan, petugas);
+
+    this.addAuditLog({
+      user: petugas,
+      role: "KOORDINATOR_RW / PETUGAS",
+      aksi: "COKLIT_STATUS_UPDATE",
+      entity: "PEMILIH",
+      target: `${this.pemilihList[idx].namaLengkap} (${this.pemilihList[idx].nikMasked})`,
+      detail: `Status Coklit diubah menjadi ${status}. Catatan: ${catatan || "-"}`,
+      ipAddress: "127.0.0.1",
+    });
+
+    return this.pemilihList[idx];
+  }
+
   public pindahTPS(
     id: string,
     tpsBaru: string,
@@ -699,43 +739,6 @@ class SystemDataStore {
     }
 
     return { totalSuccess, totalDuplicate, totalInput: voters.length };
-  }
-
-  public updateCoklitStatus(
-    id: string,
-    coklitStatus: MasterPemilih["coklitStatus"],
-    catatan?: string,
-    user = "Pantarlih"
-  ) {
-    const idx = this.pemilihList.findIndex((p) => p.id === id);
-    if (idx === -1) return null;
-
-    this.pemilihList[idx].coklitStatus = coklitStatus;
-    const today = new Date().toISOString().split("T")[0];
-    this.pemilihList[idx].coklitTanggal = today;
-    this.pemilihList[idx].coklitPetugas = user;
-    if (catatan !== undefined) this.pemilihList[idx].coklitCatatan = catatan;
-    this.pemilihList[idx].updatedAt = new Date().toISOString();
-
-    // Sync to Supabase Cloud
-    SupabaseDbService.updatePemilih(id, {
-      coklitStatus,
-      coklitTanggal: today,
-      coklitCatatan: catatan,
-      coklitPetugas: user,
-    });
-
-    this.addAuditLog({
-      user,
-      role: "PETUGAS_TPS",
-      aksi: "COKLIT_UPDATE",
-      entity: "COKLIT",
-      target: `${this.pemilihList[idx].namaLengkap} (${this.pemilihList[idx].tps})`,
-      detail: `Pembaruan status coklit: ${coklitStatus}. ${catatan ? `Catatan: ${catatan}` : ""}`,
-      ipAddress: "127.0.0.1",
-    });
-
-    return this.pemilihList[idx];
   }
 
   public getCoklitStats(tpsFilter?: string) {

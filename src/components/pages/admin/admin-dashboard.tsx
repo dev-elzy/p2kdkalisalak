@@ -468,18 +468,35 @@ export const AdminDashboard: React.FC = () => {
   const handleConfirmTms = async (alasan: string, catatan: string) => {
     if (!activeVoter) return;
     try {
+      // Optimistic instant state update (< 1ms)
+      setVoters((prev) =>
+        prev.map((v) =>
+          v.id === activeVoter.id
+            ? {
+                ...v,
+                statusAktif: "TMS",
+                alasanTms: alasan,
+                coklitStatus: "TMS",
+                coklitCatatan: catatan,
+              }
+            : v
+        )
+      );
+      setShowTmsModal(false);
+      toast.warning("Status Diubah Menjadi TMS", `${activeVoter.namaLengkap} ditandai TMS (${alasan}).`);
+
       const queryParam = catatan ? `&catatan=${encodeURIComponent(catatan)}` : "";
       const res = await fetch(`/api/admin/pemilih/${activeVoter.id}?mode=tms&alasan=${encodeURIComponent(alasan)}&user=${encodeURIComponent(currentUser)}${queryParam}`, {
         method: "DELETE",
       });
       const result = await res.json();
-      if (result.success) {
-        toast.warning("Status Diubah Menjadi TMS", `${activeVoter.namaLengkap} ditandai TMS (${alasan}).`);
-        setShowTmsModal(false);
+      if (!result.success) {
+        toast.error("Gagal", "Tidak dapat memproses TMS di server.");
         fetchData();
       }
     } catch {
       toast.error("Gagal", "Tidak dapat memproses TMS.");
+      fetchData();
     }
   };
 
@@ -645,6 +662,25 @@ export const AdminDashboard: React.FC = () => {
     catatan?: string
   ) => {
     try {
+      const todayStr = new Date().toISOString().split("T")[0];
+
+      // Optimistic instant state update (< 1ms)
+      setVoters((prev) =>
+        prev.map((v) => {
+          if (v.id !== voterId) return v;
+          return {
+            ...v,
+            coklitStatus: status,
+            coklitTanggal: status === "BELUM_COKLIT" ? undefined : todayStr,
+            coklitCatatan: catatan,
+            coklitPetugas: status === "BELUM_COKLIT" ? undefined : currentUser,
+            statusAktif: status === "TMS" ? "TMS" : "AKTIF",
+            alasanTms: status === "TMS" ? catatan || "Dinyatakan TMS saat Coklit Lapangan" : undefined,
+            tahap: status === "SESUAI" || status === "UBAH_DATA" ? "DPT" : v.tahap,
+          };
+        })
+      );
+
       const res = await fetch("/api/admin/coklit", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -657,13 +693,14 @@ export const AdminDashboard: React.FC = () => {
       });
       const result = await res.json();
       if (result.success) {
-        toast.success("Coklit Diperbarui", result.message);
-        fetchData();
+        toast.success("Coklit Berhasil", result.message);
       } else {
         toast.error("Gagal", result.message);
+        fetchData();
       }
     } catch {
       toast.error("Kesalahan Jaringan", "Gagal memperbarui status Coklit.");
+      fetchData();
     }
   };
 

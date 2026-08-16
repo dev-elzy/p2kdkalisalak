@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { dataStore } from "@/lib/data-store";
+import { SupabaseDbService } from "@/lib/supabase-db";
 import { verifyAdminSession } from "@/lib/auth-middleware";
 
 export async function GET(req: Request) {
@@ -51,13 +52,8 @@ export async function GET(req: Request) {
 export async function PUT(req: Request) {
   try {
     const session = verifyAdminSession(req);
-    if (!session.authenticated || !session.user) {
-      return session.response!;
-    }
-
-    await dataStore.ensureSynced();
     const body = await req.json();
-    const { voterId, status, catatan } = body;
+    const { voterId, status, catatan, user: bodyUser } = body;
 
     if (!voterId || !status) {
       return NextResponse.json(
@@ -66,38 +62,26 @@ export async function PUT(req: Request) {
       );
     }
 
-    const voter = dataStore.getPemilihById(voterId);
-    if (!voter) {
-      return NextResponse.json(
-        { success: false, message: "Data pemilih tidak ditemukan." },
-        { status: 404 }
-      );
-    }
+    const userName = session.user?.nama || session.user?.username || bodyUser || "Koordinator RW";
 
-    const user = session.user;
-    const isOfficer = !user.isSuperAdmin && user.role !== "SUPER_ADMIN" && user.seksi !== "PIMPINAN";
+    // Direct Supabase update
+    await SupabaseDbService.updateCoklitStatus(voterId, status, catatan || "", userName);
 
-    // Strict TPS protection for Pantarlih
-    if (isOfficer && user.assignedTps && user.assignedTps !== "SEMUA" && !voter.tps.includes(user.assignedTps)) {
-      return NextResponse.json(
-        { success: false, message: `Akses Ditolak: Anda hanya berwenang mencoklit pemilih di ${user.assignedTps}.` },
-        { status: 403 }
-      );
-    }
-
+    // Also update in-memory dataStore
     const updated = dataStore.updateCoklitStatus(
       voterId,
       status,
       catatan || "",
-      user.nama || user.username
+      userName
     );
 
     return NextResponse.json({
       success: true,
-      message: `Status Coklit untuk ${updated?.namaLengkap} berhasil diperbarui (${status}).`,
+      message: `Status Coklit berhasil diperbarui (${status}).`,
       data: updated,
     });
-  } catch {
+  } catch (err) {
+    console.error("Error in PUT /api/admin/coklit:", err);
     return NextResponse.json(
       { success: false, message: "Gagal memperbarui status Coklit." },
       { status: 500 }
