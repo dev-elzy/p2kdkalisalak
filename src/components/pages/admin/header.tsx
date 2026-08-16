@@ -1,8 +1,7 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
-import { Menu, RefreshCw, ArrowLeft, LogOut, Lock, KeyRound } from "lucide-react";
+import { Menu, RefreshCw, Lock, KeyRound } from "lucide-react";
 import { Button, Badge } from "@/components/ui";
 import { TabType, DbStatus } from "./types";
 
@@ -15,7 +14,6 @@ interface HeaderProps {
   isAdmin: boolean;
   assignedTps?: string;
   isDptLocked: boolean;
-  onLogout: () => void;
   onOpenChangePassword?: () => void;
 }
 
@@ -91,7 +89,6 @@ export const AdminHeader: React.FC<HeaderProps> = ({
   isAdmin,
   assignedTps = "SEMUA",
   isDptLocked,
-  onLogout,
   onOpenChangePassword,
 }) => {
   const current = tabTitles[activeTab] || tabTitles.pemilih;
@@ -164,22 +161,6 @@ export const AdminHeader: React.FC<HeaderProps> = ({
               <span className="hidden md:inline">Ganti Sandi</span>
             </Button>
           )}
-
-          <Link href="/" className="hidden sm:inline-block">
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs border-slate-200 hover:bg-slate-100"
-            >
-              <ArrowLeft className="w-3.5 h-3.5 mr-1" />
-              Portal Publik
-            </Button>
-          </Link>
-
-          <Button variant="danger" size="sm" onClick={onLogout} className="text-xs">
-            <LogOut className="w-3.5 h-3.5 sm:mr-1" />
-            <span className="hidden sm:inline">Keluar</span>
-          </Button>
         </div>
       </div>
     </header>

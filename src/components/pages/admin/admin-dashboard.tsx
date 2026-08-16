@@ -900,7 +900,6 @@ export const AdminDashboard: React.FC = () => {
           isAdmin={isAdmin}
           assignedTps={assignedTps}
           isDptLocked={isDptLocked}
-          onLogout={handleLogout}
           onOpenChangePassword={() => {
             setIsForcedChangePassword(false);
             setShowChangePasswordModal(true);
