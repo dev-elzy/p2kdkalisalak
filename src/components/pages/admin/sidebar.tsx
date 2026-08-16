@@ -170,18 +170,18 @@ export const AdminSidebar: React.FC<SidebarProps> = ({
       ],
     },
     {
-      title: "3. TPS, LOGISTIK & REAL COUNT",
+      title: "3. WILAYAH RW & REAL COUNT",
       icon: Vote,
       color: "text-emerald-400",
       allowedRoles: ["SUPER_ADMIN", "SEKSI_PUNGUT_HITUNG", "SEKSI_LOGISTIK_PUBLIKASI", "PETUGAS_TPS", "PANTARLIH_LAPANGAN"],
       items: [
         {
           id: "tps" as TabType,
-          label: "Lokasi Lapangan & Tabung Suara",
+          label: "13 Meja Pendaftaran & Wilayah RW",
           icon: Building2,
-          badge: `${tpsCount} Tabung`,
-          badgeColor: "bg-slate-800 text-slate-200 border-slate-700 font-bold",
-          allowedRoles: ["SUPER_ADMIN", "SEKSI_PUNGUT_HITUNG"],
+          badge: `${tpsCount} Wilayah RW`,
+          badgeColor: "bg-emerald-900/80 text-emerald-200 border-emerald-600/70",
+          allowedRoles: ["SUPER_ADMIN", "SEKSI_PUNGUT_HITUNG", "SEKSI_LOGISTIK_PUBLIKASI"],
         },
         {
           id: "print" as TabType,
@@ -193,10 +193,10 @@ export const AdminSidebar: React.FC<SidebarProps> = ({
         },
         {
           id: "realcount" as TabType,
-          label: "Real Count Hari-H Pilkades",
+          label: "Perhitungan Suara (Real Count RW)",
           icon: BarChart3,
-          badge: "LIVE",
-          badgeColor: "bg-emerald-500 text-white font-black animate-pulse",
+          badge: "Live Pleno",
+          badgeColor: "bg-teal-900/80 text-teal-200 border-teal-600/70 font-bold",
           allowedRoles: ["SUPER_ADMIN", "SEKSI_PUNGUT_HITUNG", "PETUGAS_TPS", "PANTARLIH_LAPANGAN"],
         },
       ],

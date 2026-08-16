@@ -122,9 +122,9 @@ export const DpsTable: React.FC = () => {
             <table className="w-full text-left text-xs text-slate-700">
               <thead className="bg-slate-100/80 text-slate-800 uppercase text-[10px] font-bold tracking-wider border-b border-slate-200">
                 <tr>
-                  <th className="py-3.5 px-4">TPS</th>
-                  <th className="py-3.5 px-4">Wilayah RW</th>
-                  <th className="py-3.5 px-4">Lokasi TPS</th>
+                  <th className="py-3.5 px-4">Wilayah / Meja Pendaftaran</th>
+                  <th className="py-3.5 px-4">Cakupan Wilayah</th>
+                  <th className="py-3.5 px-4">Pusat Lokasi Pemilihan</th>
                   <th className="py-3.5 px-4 text-right">Laki-Laki</th>
                   <th className="py-3.5 px-4 text-right">Perempuan</th>
                   <th className="py-3.5 px-4 text-right font-black">Total Pemilih</th>
@@ -133,13 +133,13 @@ export const DpsTable: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {pagedList.map((row) => (
                   <tr key={row.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-3 px-4 font-bold text-blue-900">{row.tps}</td>
+                    <td className="py-3 px-4 font-bold text-blue-900">Meja {row.rw}</td>
                     <td className="py-3 px-4 font-semibold text-slate-900">
-                      {row.rw} Desa Kalisalak
+                      {row.rw} (RT 01, 02, 03)
                     </td>
                     <td className="py-3 px-4 flex items-center gap-1.5 font-medium text-slate-600">
                       <MapPin className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-                      <span>{row.lokasi}</span>
+                      <span>Lapangan Desa Kalisalak</span>
                     </td>
                     <td className="py-3 px-4 text-right text-slate-600">{row.laki.toLocaleString("id-ID")}</td>
                     <td className="py-3 px-4 text-right text-slate-600">{row.perempuan.toLocaleString("id-ID")}</td>

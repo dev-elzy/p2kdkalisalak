@@ -138,7 +138,7 @@ export const TabAnggotaP2KD: React.FC<TabAnggotaP2KDProps> = ({
     { value: "SEKSI_PENYARINGAN", label: "Seksi 3: Penyaringan & Seleksi", role: "seksi_penyaringan" },
     { value: "SEKSI_PUNGUT_HITUNG", label: "Seksi 4: Pemungutan & Penghitungan", role: "seksi_pemungutan" },
     { value: "SEKSI_LOGISTIK_PUBLIKASI", label: "Seksi 5: Perlengkapan & Publikasi", role: "seksi_logistik" },
-    { value: "PANTARLIH_LAPANGAN", label: "Petugas Pantarlih / KPPS Lapangan", role: "petugas" },
+    { value: "PANTARLIH_LAPANGAN", label: "Koordinator / Petugas Lapangan Wilayah RW", role: "petugas" },
   ];
 
   const seksiOptions = isSuperAdminUser
@@ -881,20 +881,22 @@ export const TabAnggotaP2KD: React.FC<TabAnggotaP2KDProps> = ({
 
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">
-                    Penugasan Wilayah / TPS
+                    Penugasan Koordinator Wilayah RW
                   </label>
                   <select
                     value={formData.assignedTps}
                     onChange={(e) => setFormData({ ...formData, assignedTps: e.target.value })}
                     className="w-full h-10 px-3 rounded-xl border border-slate-300 bg-white font-medium text-slate-800 focus:outline-none"
                   >
-                    <option value="SEMUA">Semua Wilayah Desa</option>
-                    {tpsList && tpsList.length > 0 &&
-                      tpsList.map((t) => (
-                        <option key={t.id} value={`TPS ${t.nomorTps}`}>
-                          {t.namaTps} ({t.lokasi || t.alamat || "Desa Kalisalak"})
+                    <option value="SEMUA">Semua Wilayah Desa (Pimpinan / Seksi)</option>
+                    {Array.from({ length: 13 }, (_, i) => {
+                      const no = String(i + 1).padStart(2, "0");
+                      return (
+                        <option key={`rw-${no}`} value={`RW ${no}`}>
+                          Koordinator Lapangan Wilayah RW {no} (RT 01, 02, 03)
                         </option>
-                      ))}
+                      );
+                    })}
                   </select>
                 </div>
               </div>

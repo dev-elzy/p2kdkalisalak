@@ -53,8 +53,12 @@ export const TabCoklitLapangan: React.FC<TabCoklitLapanganProps> = ({
 
   // Filter voters for Coklit tab
   const filteredVoters = voters.filter((v) => {
-    // 1. TPS Filter
-    if (currentTps !== "SEMUA" && !v.tps.toLowerCase().includes(currentTps.toLowerCase())) {
+    // 1. RW / TPS Filter
+    if (
+      currentTps !== "SEMUA" &&
+      !v.rw.toLowerCase().includes(currentTps.toLowerCase()) &&
+      !v.tps.toLowerCase().includes(currentTps.toLowerCase())
+    ) {
       return false;
     }
 
@@ -82,7 +86,11 @@ export const TabCoklitLapangan: React.FC<TabCoklitLapanganProps> = ({
   // Calculate Coklit Statistics
   const tpsVoters = currentTps === "SEMUA"
     ? voters
-    : voters.filter((v) => v.tps.toLowerCase().includes(currentTps.toLowerCase()));
+    : voters.filter(
+        (v) =>
+          v.rw.toLowerCase().includes(currentTps.toLowerCase()) ||
+          v.tps.toLowerCase().includes(currentTps.toLowerCase())
+      );
 
   const total = tpsVoters.length;
   const sesuai = tpsVoters.filter((v) => v.coklitStatus === "SESUAI").length;
@@ -110,19 +118,19 @@ export const TabCoklitLapangan: React.FC<TabCoklitLapanganProps> = ({
             <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="primary" className="text-[10px] font-bold bg-blue-500/20 text-blue-300 border-blue-400/30 px-3 py-0.5 rounded-full">
                 <Sparkles className="w-3.5 h-3.5 mr-1 inline text-amber-400" />
-                Aplikasi Lapangan Pantarlih
+                Aplikasi Lapangan Koordinator RW
               </Badge>
               <span className="text-xs text-slate-400 font-medium">•</span>
               <span className="text-xs text-blue-200 font-semibold">
-                {currentTps === "SEMUA" ? "Seluruh Wilayah TPS (1–7)" : `Wilayah Kerja ${currentTps}`}
+                {currentTps === "SEMUA" ? "Seluruh Wilayah RW (RW 01 s/d RW 13)" : `Wilayah Tugas ${currentTps}`}
               </span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2.5">
               <CheckCircle className="w-6 h-6 text-emerald-400" />
-              Pencocokan & Penelitian Data Pemilih (Coklit)
+              Pencocokan & Penelitian Data Pemilih (Coklit Wilayah RW)
             </h2>
             <p className="text-xs text-slate-300 leading-relaxed max-w-xl font-normal">
-              Gunakan lembar kerja ini saat verifikasi door-to-door. Tandai status pemilih, lakukan koreksi identitas, atau laporkan data TMS secara seketika.
+              Gunakan lembar kerja ini saat verifikasi faktual door-to-door per lingkungan RW. Tandai status pemilih, lakukan koreksi identitas, atau laporkan data TMS secara seketika.
             </p>
           </div>
 
@@ -133,10 +141,10 @@ export const TabCoklitLapangan: React.FC<TabCoklitLapanganProps> = ({
                 onChange={(e) => setCurrentTps(e.target.value)}
                 className="h-10 px-3 text-xs font-bold rounded-2xl bg-white/10 text-white border border-white/20 focus:outline-none backdrop-blur-md"
               >
-                <option value="SEMUA" className="text-slate-900">Semua TPS</option>
+                <option value="SEMUA" className="text-slate-900">Semua Wilayah RW</option>
                 {tpsList.map((t) => (
-                  <option key={t.id} value={t.namaTps} className="text-slate-900">
-                    {t.namaTps} ({t.lokasi})
+                  <option key={t.id} value={t.rw || t.namaTps} className="text-slate-900">
+                    {t.namaTabung || t.namaTps}
                   </option>
                 ))}
               </select>

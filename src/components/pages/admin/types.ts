@@ -45,6 +45,7 @@ export interface TPSItem {
   kodeTps: string;
   nomorTps: string;
   namaTps: string;
+  namaTabung?: string;
   lokasi: string;
   alamat: string;
   rt: string;
