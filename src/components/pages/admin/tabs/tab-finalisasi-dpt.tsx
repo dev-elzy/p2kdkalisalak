@@ -224,7 +224,7 @@ export const TabFinalisasiDPT: React.FC<TabFinalisasiDPTProps> = ({
                   <th className="py-2.5 px-3 text-center w-16">L</th>
                   <th className="py-2.5 px-3 text-center w-16">P</th>
                   <th className="py-2.5 px-3 text-center w-24">Total DPT</th>
-                  <th className="py-2.5 px-3 text-center w-24">Status Pleno</th>
+                  <th className="py-2.5 px-3 text-center w-28">Status Coklit RW</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
@@ -236,6 +236,8 @@ export const TabFinalisasiDPT: React.FC<TabFinalisasiDPTProps> = ({
                   });
                   const l = votersInRw.filter((v) => String(v.jenisKelamin).toUpperCase().startsWith("L")).length;
                   const p = votersInRw.filter((v) => !String(v.jenisKelamin).toUpperCase().startsWith("L")).length;
+                  const coklitDoneInRw = votersInRw.filter((v) => v.coklitStatus && v.coklitStatus !== "BELUM_COKLIT").length;
+                  const percentCoklit = votersInRw.length > 0 ? Math.round((coklitDoneInRw / votersInRw.length) * 100) : 0;
 
                   return (
                     <tr key={t.id} className="hover:bg-slate-50/70 transition-colors">
@@ -248,10 +250,20 @@ export const TabFinalisasiDPT: React.FC<TabFinalisasiDPTProps> = ({
                         {votersInRw.length}
                       </td>
                       <td className="py-2.5 px-3 text-center">
-                        <Badge variant="success" className="text-[10px] font-bold">
-                          <CheckCircle2 className="w-3 h-3 mr-1" />
-                          Valid 100%
-                        </Badge>
+                        {percentCoklit === 0 ? (
+                          <Badge variant="outline" className="text-[10px] font-bold bg-slate-100 text-slate-600 border-slate-300">
+                            Belum Coklit (0%)
+                          </Badge>
+                        ) : percentCoklit < 100 ? (
+                          <Badge variant="warning" className="text-[10px] font-bold bg-amber-50 text-amber-700 border-amber-300">
+                            Proses ({percentCoklit}%)
+                          </Badge>
+                        ) : (
+                          <Badge variant="success" className="text-[10px] font-bold bg-emerald-50 text-emerald-700 border-emerald-300">
+                            <CheckCircle2 className="w-3 h-3 mr-1" />
+                            Selesai 100%
+                          </Badge>
+                        )}
                       </td>
                     </tr>
                   );
@@ -266,9 +278,15 @@ export const TabFinalisasiDPT: React.FC<TabFinalisasiDPTProps> = ({
                     {totalAktif}
                   </td>
                   <td className="py-3 px-3 text-center">
-                    <Badge variant="primary" className="text-[10px] font-black">
-                      Disahkan
-                    </Badge>
+                    {activeVoters.length > 0 && activeVoters.filter((v) => v.coklitStatus && v.coklitStatus !== "BELUM_COKLIT").length === 0 ? (
+                      <Badge variant="outline" className="text-[10px] font-black bg-slate-200 text-slate-700">
+                        Belum Coklit (0%)
+                      </Badge>
+                    ) : (
+                      <Badge variant="warning" className="text-[10px] font-black bg-amber-200 text-amber-900">
+                        Progres Coklit
+                      </Badge>
+                    )}
                   </td>
                 </tr>
               </tbody>
