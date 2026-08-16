@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { hashSearchIndex } from "@/lib/encryption";
 import { dataStore } from "@/lib/data-store";
+import { SupabaseDbService } from "@/lib/supabase-db";
 
 function normalizeDate(dateStr: string): string {
   if (!dateStr) return "";
@@ -104,8 +105,9 @@ export async function POST(req: Request) {
     const cleanNik = nik.trim();
     const hashedSearch = hashSearchIndex(cleanNik);
 
-    // Search voter from central data store
-    const voter = dataStore.findPemilihByNik(cleanNik);
+    // Search voter from central data store or direct indexed query (< 20ms)
+    const inStoreVoter = dataStore.findPemilihByNik(cleanNik);
+    const voter = inStoreVoter || (await SupabaseDbService.findPemilihDirect(cleanNik));
 
     if (!voter) {
       return NextResponse.json(

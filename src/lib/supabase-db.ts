@@ -202,9 +202,23 @@ interface SupabaseTahapanRow {
  */
 export class SupabaseDbService {
   private static adminClient = getSupabaseAdmin();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private static cachedResult: any = null;
+  private static lastCacheTimestamp = 0;
+  private static CACHE_TTL = 60000; // 60 detik cache dalam memory
 
-  public static async fetchAllData() {
+  public static invalidateCache() {
+    this.lastCacheTimestamp = 0;
+    this.cachedResult = null;
+  }
+
+  public static async fetchAllData(forceRefresh = false) {
     try {
+      const now = Date.now();
+      if (!forceRefresh && this.cachedResult && now - this.lastCacheTimestamp < this.CACHE_TTL) {
+        return this.cachedResult;
+      }
+
       const client = this.adminClient;
 
       // 1. Fetch TPS
@@ -436,7 +450,7 @@ export class SupabaseDbService {
         };
       }
 
-      return {
+      const resultObj = {
         success: true,
         data: {
           tpsList,
@@ -452,15 +466,65 @@ export class SupabaseDbService {
           tahapanState,
         },
       };
+      this.cachedResult = resultObj;
+      this.lastCacheTimestamp = Date.now();
+      return resultObj;
     } catch (err) {
       console.error("Gagal sinkronisasi dengan Supabase Cloud:", err);
       return { success: false, error: err };
     }
   }
 
+  /**
+   * Ultra-Fast Single NIK Lookup directly from indexed Postgres (< 20ms)
+   */
+  public static async findPemilihDirect(nik: string): Promise<MasterPemilih | null> {
+    try {
+      const clean = String(nik || "").replace(/[^0-9]/g, "");
+      if (clean.length !== 16) return null;
+
+      const { data, error } = await this.adminClient
+        .from("pemilih")
+        .select("*")
+        .eq("nik", clean)
+        .limit(1)
+        .maybeSingle();
+
+      if (error || !data) return null;
+      const p = data as SupabasePemilihRow;
+      return {
+        id: p.id,
+        nik: p.nik,
+        nikMasked: maskNIK(p.nik),
+        kk: p.no_kk,
+        namaLengkap: p.nama_lengkap,
+        tempatLahir: p.tempat_lahir,
+        tanggalLahir: p.tanggal_lahir,
+        jenisKelamin: (p.jenis_kelamin as "L" | "P") || "L",
+        statusPerkawinan: (p.status_perkawinan as "B" | "S" | "P") || "S",
+        alamat: p.alamat,
+        rt: p.rt,
+        rw: p.rw,
+        desa: p.desa,
+        kecamatan: p.kecamatan,
+        tps: p.tps,
+        statusAktif: (p.status_aktif as MasterPemilih["statusAktif"]) || "AKTIF",
+        alasanTms: p.alasan_tms || undefined,
+        coklitStatus: (p.coklit_status as MasterPemilih["coklitStatus"]) || "BELUM_COKLIT",
+        coklitTanggal: p.coklit_tanggal || undefined,
+        coklitCatatan: p.coklit_catatan || undefined,
+        coklitPetugas: p.coklit_petugas || undefined,
+        updatedAt: p.updated_at || new Date().toISOString(),
+      };
+    } catch {
+      return null;
+    }
+  }
+
   // --- Async Write Operations to Supabase Cloud ---
   public static async insertAnggota(data: MasterAnggotaP2KD) {
     try {
+      this.invalidateCache();
       await this.adminClient.from("anggota_p2kd").insert({
         id: data.id,
         nama_lengkap: data.namaLengkap,

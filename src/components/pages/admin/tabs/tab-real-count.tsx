@@ -85,15 +85,15 @@ export const TabRealCount: React.FC<TabRealCountProps> = ({
                 LIVE REAL COUNT PILKADES KALISALAK 2027
               </Badge>
               <span className="text-xs text-blue-300 font-semibold">
-                • {stats.tpsMasukCount} / {stats.totalTpsCount} TPS Masuk
+                • {stats.tpsMasukCount} / {stats.totalTpsCount} Tabung Masuk
               </span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2.5">
               <BarChart3 className="w-6 h-6 text-blue-400" />
-              Hasil Penghitungan Suara Hari-H (Quick & Real Count)
+              Penghitungan Suara Terpusat Lapangan (Pleno Tabung Suara)
             </h2>
             <p className="text-xs text-slate-300 max-w-2xl leading-relaxed font-normal">
-              Perekaman hasil pleno pemungutan suara langsung dari seluruh TPS berbasis berita acara C1 Plano desa secara realtime dan transparan.
+              Perekaman hasil pleno pemungutan suara dipusatkan di Lapangan Desa Kalisalak, direkapitulasi per Tabung Pemilihan berbasis Berita Acara C1 Plano secara realtime dan transparan.
             </p>
           </div>
 
@@ -157,11 +157,10 @@ export const TabRealCount: React.FC<TabRealCountProps> = ({
           return (
             <Card
               key={k.nomorUrut}
-              className={`p-5 relative overflow-hidden transition-all ${
-                isWinner
+              className={`p-5 relative overflow-hidden transition-all ${isWinner
                   ? "bg-white border-2 border-emerald-500 shadow-lg ring-2 ring-emerald-400/30"
                   : "bg-white border-slate-200"
-              }`}
+                }`}
             >
               {isWinner && (
                 <div className="absolute top-0 right-0 bg-emerald-600 text-white text-[10px] font-black uppercase px-3 py-1 rounded-bl-xl shadow-xs flex items-center gap-1">
@@ -234,8 +233,8 @@ export const TabRealCount: React.FC<TabRealCountProps> = ({
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-center">
-                <th className="py-3 px-3 text-left">TPS & Lokasi</th>
-                <th className="py-3 px-3">DPT TPS</th>
+                <th className="py-3 px-3 text-left">Tabung Suara & Lokasi</th>
+                <th className="py-3 px-3">DPT Tabung</th>
                 <th className="py-3 px-3 bg-blue-50/60 text-blue-900">#1 Sujarwo</th>
                 <th className="py-3 px-3 bg-emerald-50/60 text-emerald-900">#2 Fauzan</th>
                 <th className="py-3 px-3 bg-purple-50/60 text-purple-900">#3 Nurjanah</th>
