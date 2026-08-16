@@ -250,7 +250,7 @@ export const AdminDashboard: React.FC = () => {
         resAnggota,
         resBalon,
       ] = await Promise.all([
-        fetch(`/api/admin/pemilih?tps=${effectiveTps}&status=${selectedStatusFilter}&search=${encodeURIComponent(searchTerm)}&role=${isAdmin ? "admin" : "petugas"}&assignedTps=${encodeURIComponent(assignedTps)}`),
+        fetch(`/api/admin/pemilih?tps=${effectiveTps}&status=${selectedStatusFilter}&role=${isAdmin ? "admin" : "petugas"}&assignedTps=${encodeURIComponent(assignedTps)}`),
         fetch(`/api/admin/aduan?status=${selectedAduanFilter}`),
         fetch("/api/admin/tps"),
         fetch("/api/admin/audit"),
@@ -320,7 +320,6 @@ export const AdminDashboard: React.FC = () => {
   }, [
     effectiveTps,
     selectedStatusFilter,
-    searchTerm,
     selectedAduanFilter,
     isAdmin,
     assignedTps,

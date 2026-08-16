@@ -43,7 +43,6 @@ function normalizeDate(dateStr: string): string {
 
 export async function POST(req: Request) {
   try {
-    await dataStore.ensureSynced();
     const body = await req.json();
     const { nik, dob, turnstileToken } = body;
 
