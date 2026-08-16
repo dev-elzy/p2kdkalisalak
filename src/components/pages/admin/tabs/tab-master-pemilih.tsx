@@ -1,10 +1,26 @@
+"use client";
+
 import React, { useState } from "react";
-import { Search, Plus, FileSpreadsheet, Edit, ArrowRightLeft, UserX, Trash2, Users, ShieldCheck } from "lucide-react";
+import {
+  Search,
+  Plus,
+  Edit,
+  ArrowRightLeft,
+  UserX,
+  Trash2,
+  Users,
+  UserCheck,
+  RotateCcw,
+  CheckSquare,
+  Square,
+  CheckCircle2,
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Input, Button, Badge, PaginationControl } from "@/components/ui";
+import { Button, Badge, PaginationControl } from "@/components/ui";
 import { Voter, TPSItem } from "../types";
 
 interface TabMasterPemilihProps {
+  mode?: "DPS" | "DPT";
   voters: Voter[];
   tpsList: TPSItem[];
   searchTerm: string;
@@ -20,9 +36,12 @@ interface TabMasterPemilihProps {
   onOpenMutasi: (v: Voter) => void;
   onOpenTms: (v: Voter) => void;
   onDeleteVoter: (v: Voter) => void;
+  onPromoteToDpt?: (ids: string[]) => void;
+  onRollbackToDps?: (ids: string[]) => void;
 }
 
 export const TabMasterPemilih: React.FC<TabMasterPemilihProps> = ({
+  mode = "DPS",
   voters,
   tpsList,
   searchTerm,
@@ -32,19 +51,32 @@ export const TabMasterPemilih: React.FC<TabMasterPemilihProps> = ({
   selectedStatusFilter,
   setSelectedStatusFilter,
   isAdmin = true,
-  assignedTps = "SEMUA",
   onOpenAddVoter,
   onOpenEditVoter,
   onOpenMutasi,
   onOpenTms,
   onDeleteVoter,
+  onPromoteToDpt,
+  onRollbackToDps,
 }) => {
-  // Ultra-Fast Instant Client-side Filter (< 1ms across 7.787 rows)
-  const filteredVoters = voters.filter((v) => {
-    // 1. Status Filter
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // 1. Filter by Mode (DPS vs DPT)
+  const modeFilteredVoters = voters.filter((v) => {
+    if (mode === "DPT") {
+      return v.tahap === "DPT";
+    } else {
+      return v.tahap !== "DPT"; // Default to DPS
+    }
+  });
+
+  // 2. Ultra-Fast Instant Client-side Filter (< 1ms across loaded rows)
+  const filteredVoters = modeFilteredVoters.filter((v) => {
+    // Status Filter
     if (selectedStatusFilter !== "SEMUA" && v.statusAktif !== selectedStatusFilter) return false;
 
-    // 2. Wilayah RW Filter
+    // Wilayah RW Filter
     if (selectedTpsFilter !== "SEMUA") {
       const rwTarget = selectedTpsFilter.replace(/\D/g, "");
       const matchRw = v.rw && v.rw.replace(/\D/g, "") === rwTarget;
@@ -52,7 +84,7 @@ export const TabMasterPemilih: React.FC<TabMasterPemilihProps> = ({
       if (!matchRw && !matchTps) return false;
     }
 
-    // 3. Search Query (NIK, Nama, KK, RT/RW, Alamat)
+    // Search Query (NIK, Nama, KK, RT/RW, Alamat)
     if (searchTerm.trim()) {
       const q = searchTerm.toLowerCase().trim();
       const matchName = v.namaLengkap.toLowerCase().includes(q);
@@ -69,6 +101,8 @@ export const TabMasterPemilih: React.FC<TabMasterPemilihProps> = ({
 
   const activeCount = filteredVoters.filter((v) => v.statusAktif === "AKTIF").length;
   const tmsCount = filteredVoters.filter((v) => v.statusAktif === "TMS").length;
+  const lakiCount = filteredVoters.filter((v) => v.statusAktif === "AKTIF" && String(v.jenisKelamin).toUpperCase().startsWith("L")).length;
+  const perempuanCount = filteredVoters.filter((v) => v.statusAktif === "AKTIF" && !String(v.jenisKelamin).toUpperCase().startsWith("L")).length;
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
@@ -78,176 +112,266 @@ export const TabMasterPemilih: React.FC<TabMasterPemilihProps> = ({
   const startIdx = (activePage - 1) * pageSize;
   const pagedVoters = filteredVoters.slice(startIdx, startIdx + pageSize);
 
+  // Selection handlers
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAllPaged = () => {
+    const pagedIds = pagedVoters.map((v) => v.id);
+    const allSelected = pagedIds.every((id) => selectedIds.includes(id));
+    if (allSelected) {
+      setSelectedIds((prev) => prev.filter((id) => !pagedIds.includes(id)));
+    } else {
+      setSelectedIds((prev) => Array.from(new Set([...prev, ...pagedIds])));
+    }
+  };
+
+  const handlePromoteSelected = async () => {
+    if (selectedIds.length === 0 || !onPromoteToDpt) return;
+    setIsProcessing(true);
+    try {
+      await onPromoteToDpt(selectedIds);
+      setSelectedIds([]);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleRollbackSelected = async () => {
+    if (selectedIds.length === 0 || !onRollbackToDps) return;
+    setIsProcessing(true);
+    try {
+      await onRollbackToDps(selectedIds);
+      setSelectedIds([]);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handlePromoteCurrentFiltered = async () => {
+    if (filteredVoters.length === 0 || !onPromoteToDpt) return;
+    const ids = filteredVoters.map((v) => v.id);
+    setIsProcessing(true);
+    try {
+      await onPromoteToDpt(ids);
+      setSelectedIds([]);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <div className="space-y-5">
       {/* Hero Header */}
-      <Card className="p-6 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-950 text-white border border-blue-900/60 shadow-lg rounded-3xl">
+      <Card
+        className={`p-6 text-white border shadow-xl rounded-3xl ${
+          mode === "DPT"
+            ? "bg-gradient-to-r from-emerald-950 via-teal-950 to-slate-950 border-emerald-900/60"
+            : "bg-gradient-to-r from-slate-900 via-blue-950 to-slate-950 border-blue-900/60"
+        }`}
+      >
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Badge
                 variant="primary"
-                className="text-[10px] uppercase font-bold bg-blue-500/20 text-blue-300 border-blue-400/30 px-3 py-0.5 rounded-full"
+                className={`text-[10px] uppercase font-bold px-3 py-0.5 rounded-full ${
+                  mode === "DPT"
+                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-400/30"
+                    : "bg-amber-500/20 text-amber-300 border-amber-400/30"
+                }`}
               >
-                Pusat Pendataan Pemilih (DPT)
+                {mode === "DPT" ? "1.2 DAFTAR PEMILIH TETAP (DPT)" : "1.1 DAFTAR PEMILIH SEMENTARA (DPS)"}
               </Badge>
               <span className="text-xs text-slate-400 font-medium">
-                • {activeCount} Pemilih Aktif • {tmsCount} TMS
+                • {activeCount} Pemilih Aktif ({lakiCount} L • {perempuanCount} P) • {tmsCount} TMS
               </span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2.5">
-              <Users className="w-6 h-6 text-blue-400" />
-              Buku Induk & Rekapitulasi Daftar Pemilih
+              {mode === "DPT" ? (
+                <>
+                  <UserCheck className="w-6 h-6 text-emerald-400" />
+                  Daftar Pemilih Tetap (DPT) Terverifikasi Sah
+                </>
+              ) : (
+                <>
+                  <Users className="w-6 h-6 text-amber-400" />
+                  Daftar Pemilih Sementara (DPS) - Tahap Verifikasi & Coklit
+                </>
+              )}
             </h2>
-            <p className="text-xs text-slate-300 max-w-2xl leading-relaxed font-normal">
-              Database komprehensif seluruh pemilih Pilkades Kalisalak (13 RW & 39 RT) terhubung langsung dengan enkripsi database dan status hak pilih secara realtime.
+            <p className="text-xs text-slate-300 max-w-3xl leading-relaxed font-normal">
+              {mode === "DPT"
+                ? "Daftar pemilih ini berisi warga yang telah lolos verifikasi faktual lapangan dan telah disahkan masuk ke DPT. Data pemilih di sini siap ditetapkan pada Sidang Pleno DPT Pilkades Kalisalak."
+                : "Daftar pemilih sementara yang sedang dalam proses pencocokan dan penelitian door-to-door. Pemilih yang sudah diverifikasi dapat langsung dipindahkan ke Daftar Pemilih Tetap (DPT)."}
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
-            <a
-              href={`/api/admin/export?type=PEMILIH&tps=${isAdmin ? selectedTpsFilter : assignedTps}&status=${selectedStatusFilter}&search=${encodeURIComponent(searchTerm)}&role=${isAdmin ? "admin" : "petugas"}&assignedTps=${encodeURIComponent(assignedTps)}`}
-              download
-              title="Unduh Data Pemilih (.xlsx)"
-            >
-              <button
-                type="button"
-                className="px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-xs flex items-center gap-2 backdrop-blur-md transition-all shadow-sm cursor-pointer"
+          <div className="flex items-center gap-2 shrink-0">
+            {mode === "DPS" && onPromoteToDpt && filteredVoters.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePromoteCurrentFiltered}
+                disabled={isProcessing}
+                className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border-emerald-400/40 text-xs font-bold"
               >
-                <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-                <span>Ekspor Master Excel</span>
-              </button>
-            </a>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={onOpenAddVoter}
-              className="text-xs font-bold bg-blue-600 hover:bg-blue-500 rounded-2xl py-2.5 px-4 shadow-md"
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              Tambah Pemilih Baru
-            </Button>
+                <UserCheck className="w-4 h-4 mr-1.5" />
+                {selectedTpsFilter !== "SEMUA"
+                  ? `Verifikasi Semua di ${selectedTpsFilter} (${filteredVoters.length})`
+                  : `Verifikasi Semua DPS (${filteredVoters.length})`}
+              </Button>
+            )}
           </div>
         </div>
       </Card>
 
-      {/* Privacy Notice for Pantarlih */}
-      {!isAdmin && (
-        <div className="p-3.5 rounded-2xl bg-emerald-950 text-emerald-100 border border-emerald-800 shadow-xs flex items-center justify-between text-xs gap-3">
-          <div className="flex items-center gap-2.5">
-            <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
-            <div>
-              <span className="font-bold text-white block">
-                Hak Akses Khusus: {assignedTps}
-              </span>
-              <span className="text-[11px] text-emerald-300">
-                Sesuai UU Perlindungan Data Pribadi (PDP), Anda hanya berwenang melihat & mengelola pemilih di wilayah {assignedTps}. Data TPS lain dilindungi secara enkripsi.
-              </span>
-            </div>
-          </div>
-          <Badge variant="success" className="bg-emerald-800 text-emerald-200 border-emerald-700 text-[10px] uppercase font-bold shrink-0">
-            Akses Terisolasi
-          </Badge>
-        </div>
-      )}
-
-      {/* Filter and Search Bar */}
-      <Card className="p-4 bg-white border-slate-200 shadow-sm">
-        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
-          <div className="sm:col-span-5">
-            <Input
-              placeholder="Cari NIK, Nama Pemilih, atau RT/RW..."
+      {/* Filter & Action Toolbar */}
+      <Card className="p-4 bg-white border-slate-200 shadow-sm space-y-3">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          {/* Search Box */}
+          <div className="relative flex-1 min-w-[240px]">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder={`Cari nama, NIK, No. KK, atau alamat di ${mode === "DPT" ? "DPT" : "DPS"}...`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              icon={<Search className="w-4 h-4 text-slate-400" />}
+              className="w-full h-10 pl-9 pr-4 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-medium"
             />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 font-bold"
+              >
+                ✕
+              </button>
+            )}
           </div>
 
-          <div className="sm:col-span-3">
-            <select
-              value={selectedTpsFilter}
-              disabled={!isAdmin} // Disabled for Pantarlih to prevent viewing other TPS
-              onChange={(e) => setSelectedTpsFilter(e.target.value)}
-              className="w-full h-10 px-3 text-xs rounded-xl border border-slate-300 bg-white font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:bg-slate-100 disabled:text-slate-500 font-bold"
-            >
-              {isAdmin && (
-                <option value="SEMUA">
-                  Semua Wilayah RW ({tpsList.length > 0 ? `${tpsList.length} Wilayah RW` : "13 Wilayah RW"})
-                </option>
-              )}
-              {tpsList.map((t) => (
-                <option key={t.id} value={t.rw || t.namaTps}>
-                  {t.namaTabung || t.namaTps} ({t.rw || `RW ${t.nomorTps}`})
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Filters & Actions */}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Filter Wilayah RW */}
+            {isAdmin && (
+              <select
+                value={selectedTpsFilter}
+                onChange={(e) => setSelectedTpsFilter(e.target.value)}
+                className="h-10 px-3 text-xs rounded-xl border border-slate-200 bg-white font-semibold text-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
+              >
+                <option value="SEMUA">Semua Wilayah RW (13 Wilayah RW)</option>
+                {tpsList.map((t) => (
+                  <option key={t.id} value={t.nomorTps}>
+                    {t.namaTps} ({t.lokasi})
+                  </option>
+                ))}
+              </select>
+            )}
 
-          <div className="sm:col-span-2">
+            {/* Filter Status Aktif/TMS */}
             <select
               value={selectedStatusFilter}
               onChange={(e) => setSelectedStatusFilter(e.target.value)}
-              className="w-full h-10 px-3 text-xs rounded-xl border border-slate-300 bg-white font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="h-10 px-3 text-xs rounded-xl border border-slate-200 bg-white font-semibold text-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
             >
-              <option value="SEMUA">Semua Status</option>
-              <option value="AKTIF">Hanya Aktif</option>
-              <option value="TMS">Hanya TMS</option>
+              <option value="SEMUA">Semua Status (Aktif & TMS)</option>
+              <option value="AKTIF">Hanya Pemilih Aktif</option>
+              <option value="TMS">Hanya Pemilih TMS</option>
             </select>
-          </div>
 
-          <div className="sm:col-span-2 flex items-center justify-end gap-2">
-            <a
-              href={`/api/admin/export?type=PEMILIH&tps=${isAdmin ? selectedTpsFilter : assignedTps}&status=${selectedStatusFilter}&search=${encodeURIComponent(searchTerm)}&role=${isAdmin ? "admin" : "petugas"}&assignedTps=${encodeURIComponent(assignedTps)}`}
-              download
-              title="Unduh Data Pemilih Terfilter ke Format Excel (.xlsx)"
-            >
+            {/* Bulk Actions Button */}
+            {mode === "DPS" && selectedIds.length > 0 && onPromoteToDpt && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handlePromoteSelected}
+                disabled={isProcessing}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md animate-bounce"
+              >
+                <UserCheck className="w-4 h-4 mr-1.5" />
+                Verifikasi {selectedIds.length} Terpilih $\to$ Masuk DPT
+              </Button>
+            )}
+
+            {mode === "DPT" && selectedIds.length > 0 && onRollbackToDps && (
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                onClick={handleRollbackSelected}
+                disabled={isProcessing}
+                className="text-amber-700 border-amber-400 hover:bg-amber-50 font-bold text-xs shadow-sm"
               >
-                <FileSpreadsheet className="w-3.5 h-3.5 mr-1 text-emerald-600" />
-                Excel
+                <RotateCcw className="w-4 h-4 mr-1.5" />
+                Kembalikan {selectedIds.length} Terpilih ke DPS
               </Button>
-            </a>
+            )}
 
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={onOpenAddVoter}
-              className="text-xs font-bold"
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              Tambah
-            </Button>
+            {/* Tambah Pemilih Button */}
+            {mode === "DPS" && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={onOpenAddVoter}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Tambah Pemilih Baru
+              </Button>
+            )}
           </div>
         </div>
       </Card>
 
       {/* Table of Voters */}
-      <Card className="overflow-hidden bg-white border-slate-200 shadow-sm">
+      <Card className="overflow-hidden bg-white border-slate-200 shadow-sm rounded-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider">
-                <th className="py-3 px-4">No</th>
+                <th className="py-3 px-3 w-10 text-center">
+                  <button
+                    onClick={handleSelectAllPaged}
+                    title="Pilih Semua di Halaman Ini"
+                    className="p-1 text-slate-500 hover:text-slate-800"
+                  >
+                    {pagedVoters.length > 0 && pagedVoters.every((v) => selectedIds.includes(v.id)) ? (
+                      <CheckSquare className="w-4 h-4 text-blue-600" />
+                    ) : (
+                      <Square className="w-4 h-4 text-slate-400" />
+                    )}
+                  </button>
+                </th>
+                <th className="py-3 px-3 w-12 text-center">No</th>
                 <th className="py-3 px-4">NIK (Sensor Proteksi)</th>
                 <th className="py-3 px-4">Nama Lengkap & JK</th>
                 <th className="py-3 px-4">Wilayah / Domisili</th>
                 <th className="py-3 px-4">Meja Pendaftaran</th>
-                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4 text-center">Status Tahap</th>
                 <th className="py-3 px-4 text-center">Aksi Petugas</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-800 font-medium">
-              {voters.length === 0 ? (
+              {filteredVoters.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-400">
-                    Tidak ada data pemilih yang sesuai kriteria pencarian di {isAdmin ? "desa" : assignedTps}.
+                  <td colSpan={8} className="py-12 text-center text-slate-400">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <Users className="w-8 h-8 text-slate-300" />
+                      <div>
+                        Tidak ada data pemilih yang berada di <strong>{mode === "DPT" ? "DPT" : "DPS"}</strong> untuk kriteria pencarian ini.
+                      </div>
+                      {mode === "DPT" && (
+                        <p className="text-xs text-slate-400">
+                          Silakan verifikasi data dari menu <strong>1.1 Daftar Pemilih Sementara (DPS)</strong> terlebih dahulu.
+                        </p>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ) : (
                 pagedVoters.map((p, idx) => {
+                  const isSelected = selectedIds.includes(p.id);
                   const rtNum = (p.rt || "01").replace(/\D/g, "").padStart(2, "0");
                   const rwNum = (p.rw || "01").replace(/\D/g, "").padStart(2, "0");
                   const mejaName = p.tps && p.tps.includes("Meja")
@@ -255,10 +379,28 @@ export const TabMasterPemilih: React.FC<TabMasterPemilihProps> = ({
                     : `Meja RW ${rwNum}`;
                   const maskedNikDisplay = p.nikMasked || (p.nik ? `${p.nik.slice(0, 1)}*************${p.nik.slice(-2)}` : "****************");
                   const maskedKkDisplay = p.kk ? `${p.kk.slice(0, 1)}*************${p.kk.slice(-2)}` : "-";
+                  const isLaki = String(p.jenisKelamin).toUpperCase().startsWith("L");
 
                   return (
-                    <tr key={p.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3 px-4 text-slate-400">{startIdx + idx + 1}</td>
+                    <tr
+                      key={p.id}
+                      className={`hover:bg-slate-50/80 transition-colors ${
+                        isSelected ? "bg-blue-50/60" : ""
+                      }`}
+                    >
+                      <td className="py-3 px-3 text-center">
+                        <button
+                          onClick={() => handleToggleSelect(p.id)}
+                          className="p-1 text-slate-500 hover:text-slate-800"
+                        >
+                          {isSelected ? (
+                            <CheckSquare className="w-4 h-4 text-blue-600" />
+                          ) : (
+                            <Square className="w-4 h-4 text-slate-300" />
+                          )}
+                        </button>
+                      </td>
+                      <td className="py-3 px-3 text-center text-slate-400 font-semibold">{startIdx + idx + 1}</td>
                       <td className="py-3 px-4 font-mono font-bold text-slate-900">
                         {maskedNikDisplay}
                         <div className="text-[10px] text-slate-400 font-normal">KK: {maskedKkDisplay}</div>
@@ -266,7 +408,7 @@ export const TabMasterPemilih: React.FC<TabMasterPemilihProps> = ({
                       <td className="py-3 px-4">
                         <div className="font-bold text-slate-900">{p.namaLengkap}</div>
                         <div className="text-[10px] text-slate-500">
-                          {String(p.jenisKelamin).toUpperCase().startsWith("L") ? "Laki-laki" : "Perempuan"} • Lahir: {p.tempatLahir}, {p.tanggalLahir}
+                          {isLaki ? "Laki-laki" : "Perempuan"} • Lahir: {p.tempatLahir}, {p.tanggalLahir}
                         </div>
                       </td>
                       <td className="py-3 px-4">
@@ -278,69 +420,107 @@ export const TabMasterPemilih: React.FC<TabMasterPemilihProps> = ({
                           {mejaName}
                         </Badge>
                       </td>
-                    <td className="py-3 px-4">
-                      {p.statusAktif === "AKTIF" ? (
-                        <Badge variant="success" className="text-[10px]">
-                          AKTIF
-                        </Badge>
-                      ) : (
-                        <Badge variant="danger" className="text-[10px]">
-                          TMS ({p.alasanTms || "TIDAK MEMENUHI"})
-                        </Badge>
-                      )}
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center justify-center gap-1.5">
-                        <button
-                          onClick={() => onOpenEditVoter(p)}
-                          title="Koreksi Data"
-                          className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-colors"
-                        >
-                          <Edit className="w-3.5 h-3.5" />
-                        </button>
-
-                        <button
-                          onClick={() => onOpenMutasi(p)}
-                          title="Pindah TPS"
-                          className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 transition-colors"
-                        >
-                          <ArrowRightLeft className="w-3.5 h-3.5" />
-                        </button>
-
-                        {p.statusAktif === "AKTIF" && (
-                          <button
-                            onClick={() => onOpenTms(p)}
-                            title="Tandai TMS (Meninggal/Pindah)"
-                            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-300 transition-colors"
-                          >
-                            <UserX className="w-3.5 h-3.5" />
-                          </button>
+                      <td className="py-3 px-4 text-center">
+                        {p.statusAktif === "AKTIF" ? (
+                          mode === "DPT" ? (
+                            <Badge variant="success" className="text-[10px] font-bold">
+                              <CheckCircle2 className="w-3 h-3 mr-1" />
+                              Sah di DPT
+                            </Badge>
+                          ) : (
+                            <Badge variant="warning" className="text-[10px] font-bold">
+                              Draft DPS
+                            </Badge>
+                          )
+                        ) : (
+                          <Badge variant="danger" className="text-[10px]">
+                            TMS ({p.alasanTms || "TIDAK MEMENUHI"})
+                          </Badge>
                         )}
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center justify-center gap-1.5">
+                          {/* Verifikasi Masuk DPT (in DPS mode) */}
+                          {mode === "DPS" && onPromoteToDpt && p.statusAktif === "AKTIF" && (
+                            <button
+                              onClick={() => onPromoteToDpt([p.id])}
+                              title="Verifikasi & Pindahkan Masuk ke DPT"
+                              className="p-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-300 transition-colors"
+                            >
+                              <UserCheck className="w-3.5 h-3.5" />
+                            </button>
+                          )}
 
-                        {isAdmin && (
+                          {/* Kembalikan ke DPS (in DPT mode) */}
+                          {mode === "DPT" && onRollbackToDps && (
+                            <button
+                              onClick={() => onRollbackToDps([p.id])}
+                              title="Kembalikan ke DPS (Perbaikan Data)"
+                              className="p-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white border border-amber-300 transition-colors"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+
+                          {/* Koreksi Data */}
                           <button
-                            onClick={() => onDeleteVoter(p)}
-                            title="Hapus Permanen (Superadmin)"
-                            className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:bg-rose-100 hover:text-rose-800 hover:border-rose-400 transition-colors"
+                            onClick={() => onOpenEditVoter(p)}
+                            title="Koreksi Data"
+                            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-colors"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Edit className="w-3.5 h-3.5" />
                           </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              }))}
+
+                          {/* Mutasi RW */}
+                          <button
+                            onClick={() => onOpenMutasi(p)}
+                            title="Pindah Meja RW"
+                            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 transition-colors"
+                          >
+                            <ArrowRightLeft className="w-3.5 h-3.5" />
+                          </button>
+
+                          {/* TMS */}
+                          {p.statusAktif === "AKTIF" && (
+                            <button
+                              onClick={() => onOpenTms(p)}
+                              title="Tandai TMS (Meninggal/Pindah)"
+                              className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-300 transition-colors"
+                            >
+                              <UserX className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+
+                          {/* Hapus */}
+                          {isAdmin && (
+                            <button
+                              onClick={() => onDeleteVoter(p)}
+                              title="Hapus Permanen (Superadmin)"
+                              className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:bg-rose-100 hover:text-rose-800 hover:border-rose-400 transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
+
         <div className="px-4 pb-4">
           <PaginationControl
             currentPage={activePage}
-            totalItems={voters.length}
+            totalItems={filteredVoters.length}
             pageSize={pageSize}
             onPageChange={setCurrentPage}
-            onPageSizeChange={(sz) => { setPageSize(sz); setCurrentPage(1); }}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setCurrentPage(1);
+            }}
           />
         </div>
       </Card>

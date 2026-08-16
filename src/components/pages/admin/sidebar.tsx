@@ -34,6 +34,7 @@ interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
   voterCount: number;
+  dptCount?: number;
   tpsCount: number;
   aduanPendingCount: number;
   isDptLocked: boolean;
@@ -58,6 +59,7 @@ export const AdminSidebar: React.FC<SidebarProps> = ({
   isOpen,
   onClose,
   voterCount,
+  dptCount = 0,
   tpsCount,
   aduanPendingCount,
   isDptLocked,
@@ -100,15 +102,23 @@ export const AdminSidebar: React.FC<SidebarProps> = ({
       items: [
         {
           id: "pemilih" as TabType,
-          label: "Master Pemilih (DPS/DPT)",
+          label: "1.1 Daftar Pemilih Sementara (DPS)",
           icon: Users,
-          badge: voterCount.toString(),
-          badgeColor: "bg-blue-900/80 text-blue-200 border-blue-600/70",
+          badge: (voterCount - (dptCount || 0)).toString(),
+          badgeColor: "bg-amber-900/80 text-amber-200 border-amber-600/70",
+          allowedRoles: ["SUPER_ADMIN", "SEKSI_PEMILIH", "PETUGAS_TPS", "PANTARLIH_LAPANGAN"],
+        },
+        {
+          id: "dpt" as TabType,
+          label: "1.2 Daftar Pemilih Tetap (DPT)",
+          icon: UserCheck,
+          badge: (dptCount || 0).toString(),
+          badgeColor: (dptCount || 0) > 0 ? "bg-emerald-900/80 text-emerald-200 border-emerald-600/70 font-bold" : "bg-slate-800 text-slate-400 border-slate-700",
           allowedRoles: ["SUPER_ADMIN", "SEKSI_PEMILIH", "PETUGAS_TPS", "PANTARLIH_LAPANGAN"],
         },
         {
           id: "coklit" as TabType,
-          label: "Coklit Lapangan (PANTARLIH)",
+          label: "1.3 Coklit Lapangan (Koordinator RW)",
           icon: Sparkles,
           badge: "Coklit",
           badgeColor: "bg-amber-400 text-slate-950 font-black border-amber-300 animate-pulse",

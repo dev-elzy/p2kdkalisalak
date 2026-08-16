@@ -37,8 +37,12 @@ const tabTitles: Record<TabType, { title: string; subtitle: string }> = {
     subtitle: "Pencocokan, penelitian, dan verifikasi faktual pemilih door-to-door per RW",
   },
   pemilih: {
-    title: "Master Data Pemilih (DPS / DPT)",
-    subtitle: "Pencatatan, perubahan status, dan penetapan pemilih 13 Wilayah RW Desa Kalisalak",
+    title: "1.1 Daftar Pemilih Sementara (DPS)",
+    subtitle: "Pemutakhiran, verifikasi faktual warga, dan promosi data pemilih masuk ke DPT",
+  },
+  dpt: {
+    title: "1.2 Daftar Pemilih Tetap (DPT)",
+    subtitle: "Daftar pemilih sah yang telah lolos verifikasi dan siap disahkan pada Sidang Pleno",
   },
   kandidat: {
     title: "Seksi Penyaringan: Calon Kepala Desa & Visi Misi",

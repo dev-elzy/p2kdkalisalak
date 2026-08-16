@@ -532,6 +532,65 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
+  // --- PROMOSI / ROLLBACK PEMILIH DPS <-> DPT ---
+  const handlePromoteToDpt = async (ids: string[]) => {
+    if (!ids || ids.length === 0) return;
+    try {
+      // Optimistic UI update
+      setVoters((prev) =>
+        prev.map((v) => (ids.includes(v.id) ? { ...v, tahap: "DPT" } : v))
+      );
+
+      const res = await fetch("/api/admin/pemilih/promosi-dpt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids, targetTahap: "DPT", user: currentUser }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        toast.success(
+          "Verifikasi Masuk DPT Berhasil",
+          `${result.count} data pemilih telah dipindahkan dari DPS ke DPT.`
+        );
+      } else {
+        toast.error("Gagal Verifikasi", result.message || "Tidak dapat memindahkan data.");
+        fetchData();
+      }
+    } catch {
+      toast.error("Kesalahan Jaringan", "Tidak dapat menghubungi server.");
+      fetchData();
+    }
+  };
+
+  const handleRollbackToDps = async (ids: string[]) => {
+    if (!ids || ids.length === 0) return;
+    try {
+      // Optimistic UI update
+      setVoters((prev) =>
+        prev.map((v) => (ids.includes(v.id) ? { ...v, tahap: "DPS" } : v))
+      );
+
+      const res = await fetch("/api/admin/pemilih/promosi-dpt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids, targetTahap: "DPS", user: currentUser }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        toast.warning(
+          "Dikembalikan ke DPS",
+          `${result.count} data pemilih dikembalikan ke DPS untuk perbaikan.`
+        );
+      } else {
+        toast.error("Gagal", result.message || "Tidak dapat mengembalikan data.");
+        fetchData();
+      }
+    } catch {
+      toast.error("Kesalahan Jaringan", "Tidak dapat menghubungi server.");
+      fetchData();
+    }
+  };
+
   // --- ADUAN RESOLUTION ---
   const handleApproveAduan = async (a: Aduan) => {
     try {
@@ -811,6 +870,7 @@ export const AdminDashboard: React.FC = () => {
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         voterCount={voters.length}
+        dptCount={voters.filter((v) => v.tahap === "DPT").length}
         tpsCount={tpsList.length}
         aduanPendingCount={totalAduanMenunggu}
         isDptLocked={isDptLocked}
@@ -936,6 +996,7 @@ export const AdminDashboard: React.FC = () => {
 
           {effectiveActiveTab === "pemilih" && (
             <TabMasterPemilih
+              mode="DPS"
               voters={voters}
               tpsList={tpsList}
               searchTerm={searchTerm}
@@ -969,6 +1030,47 @@ export const AdminDashboard: React.FC = () => {
               onOpenMutasi={handleOpenMutasi}
               onOpenTms={handleOpenTms}
               onDeleteVoter={handleDeleteVoter}
+              onPromoteToDpt={handlePromoteToDpt}
+            />
+          )}
+
+          {effectiveActiveTab === "dpt" && (
+            <TabMasterPemilih
+              mode="DPT"
+              voters={voters}
+              tpsList={tpsList}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              selectedTpsFilter={selectedTpsFilter}
+              setSelectedTpsFilter={setSelectedTpsFilter}
+              selectedStatusFilter={selectedStatusFilter}
+              setSelectedStatusFilter={setSelectedStatusFilter}
+              isAdmin={isAdmin}
+              assignedTps={assignedTps}
+              onOpenAddVoter={() => {
+                const autoTps = getAutoTabungByRtRw("01", "01", tpsList);
+                setVoterForm({
+                  nik: "",
+                  kk: "",
+                  namaLengkap: "",
+                  tempatLahir: "",
+                  tanggalLahir: "",
+                  jenisKelamin: "L",
+                  statusPerkawinan: "S",
+                  alamat: "",
+                  rt: "01",
+                  rw: "01",
+                  tps: autoTps,
+                  statusAktif: "AKTIF",
+                  alasanTms: "",
+                });
+                setShowAddVoterModal(true);
+              }}
+              onOpenEditVoter={handleOpenEditVoter}
+              onOpenMutasi={handleOpenMutasi}
+              onOpenTms={handleOpenTms}
+              onDeleteVoter={handleDeleteVoter}
+              onRollbackToDps={handleRollbackToDps}
             />
           )}
 

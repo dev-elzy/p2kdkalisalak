@@ -49,6 +49,7 @@ interface SupabasePemilihRow {
   coklit_tanggal?: string | null;
   coklit_catatan?: string | null;
   coklit_petugas?: string | null;
+  tahap?: string | null;
   updated_at?: string | null;
 }
 
@@ -304,6 +305,7 @@ export class SupabaseDbService {
         coklitTanggal: p.coklit_tanggal || undefined,
         coklitCatatan: p.coklit_catatan || undefined,
         coklitPetugas: p.coklit_petugas || undefined,
+        tahap: (p.tahap as "DPS" | "DPT") || "DPS",
         updatedAt: p.updated_at || new Date().toISOString(),
       }));
 
@@ -534,10 +536,56 @@ export class SupabaseDbService {
         coklitTanggal: p.coklit_tanggal || undefined,
         coklitCatatan: p.coklit_catatan || undefined,
         coklitPetugas: p.coklit_petugas || undefined,
+        tahap: (p.tahap as "DPS" | "DPT") || "DPS",
         updatedAt: p.updated_at || new Date().toISOString(),
       };
     } catch {
       return null;
+    }
+  }
+
+  /**
+   * Promosi / Pindahkan Pemilih dari DPS ke DPT (atau kembalikan ke DPS).
+   */
+  public static async promotePemilihToDpt(
+    ids: string[],
+    user = "Petugas P2KD",
+    targetTahap: "DPS" | "DPT" = "DPT"
+  ): Promise<{ success: boolean; count: number }> {
+    try {
+      if (!ids || ids.length === 0) return { success: false, count: 0 };
+
+      const { data, error } = await this.adminClient
+        .from("pemilih")
+        .update({
+          tahap: targetTahap,
+          updated_at: new Date().toISOString(),
+        })
+        .in("id", ids)
+        .select("id");
+
+      if (error) {
+        console.error("Error updating pemilih tahap in Supabase:", error);
+        return { success: false, count: 0 };
+      }
+
+      this.invalidateCache();
+
+      // Log Audit
+      await this.adminClient.from("audit_logs").insert({
+        user_name: user,
+        role: "ADMIN / SEKSI PEMILIH",
+        aksi: targetTahap === "DPT" ? "VERIFIKASI_MASUK_DPT" : "KEMBALIKAN_KE_DPS",
+        entity: "PEMILIH",
+        target: `${ids.length} Pemilih`,
+        detail: `Berhasil mengubah status tahap ${ids.length} pemilih menjadi ${targetTahap}.`,
+        ip_address: "127.0.0.1",
+      });
+
+      return { success: true, count: (data || []).length };
+    } catch (err) {
+      console.error("Exception promotePemilihToDpt:", err);
+      return { success: false, count: 0 };
     }
   }
 

@@ -20,6 +20,7 @@ export interface MasterPemilih {
   kecamatan: string;
   tps: string; // e.g. "001" or "TPS 001"
   statusAktif: "AKTIF" | "TMS" | "MUTASI_KELUAR";
+  tahap?: "DPS" | "DPT";
   alasanTms?: string;
   disabilitas?: string;
   coklitStatus?: "BELUM_COKLIT" | "SESUAI" | "UBAH_DATA" | "TMS" | "BARU";

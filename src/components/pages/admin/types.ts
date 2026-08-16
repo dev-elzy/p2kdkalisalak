@@ -15,6 +15,7 @@ export interface Voter {
   kecamatan: string;
   tps: string;
   statusAktif: "AKTIF" | "TMS" | "MUTASI_KELUAR";
+  tahap?: "DPS" | "DPT";
   alasanTms?: string;
   disabilitas?: string;
   coklitStatus?: "BELUM_COKLIT" | "SESUAI" | "UBAH_DATA" | "TMS" | "BARU";
@@ -206,6 +207,7 @@ export interface VoterFormData {
   rw: string;
   tps: string;
   statusAktif: "AKTIF" | "TMS";
+  tahap?: "DPS" | "DPT";
   alasanTms: string;
 }
 
@@ -221,6 +223,7 @@ export interface UserProfile {
 export type TabType =
   | "dashboard"
   | "pemilih"
+  | "dpt"
   | "coklit"
   | "aduan"
   | "penjaringan"
