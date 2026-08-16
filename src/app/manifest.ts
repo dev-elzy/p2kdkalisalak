@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "P2KD Petugas",
     description: "Aplikasi Operasional P2KD Desa Kalisalak, Coklit Lapangan, DPT & Real Count Pilkades 2027",
     start_url: "/admin",
-    scope: "/",
+    scope: "/admin",
     display: "standalone",
     background_color: "#020617",
     theme_color: "#1e3a8a",

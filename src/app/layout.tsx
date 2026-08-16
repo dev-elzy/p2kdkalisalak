@@ -58,6 +58,31 @@ export default function RootLayout({
       lang="id"
       className={`${plusJakartaSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var isPWA = window.matchMedia('(display-mode: standalone)').matches ||
+                              window.matchMedia('(display-mode: fullscreen)').matches ||
+                              window.matchMedia('(display-mode: minimal-ui)').matches ||
+                              window.matchMedia('(display-mode: window-controls-overlay)').matches ||
+                              (window.navigator && window.navigator.standalone === true) ||
+                              (document.referrer && document.referrer.indexOf('android-app://') !== -1);
+                  if (isPWA) {
+                    document.documentElement.classList.add('is-pwa-app');
+                    var p = window.location.pathname;
+                    if (p !== '/admin' && !p.startsWith('/admin') && !p.startsWith('/verifikasi-c6') && !p.startsWith('/stiker-coklit')) {
+                      window.location.replace('/admin');
+                    }
+                  }
+                } catch(e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 font-sans selection:bg-blue-600/20 selection:text-blue-900">
         <PwaRegistrar />
         <AppProviders>{children}</AppProviders>

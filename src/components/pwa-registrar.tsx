@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 export function PwaRegistrar() {
   const pathname = usePathname();
-  const router = useRouter();
 
   useEffect(() => {
     // 1. Silent BeforeInstallPrompt handler (Disables annoying automatic install banner popups)
@@ -27,27 +26,32 @@ export function PwaRegistrar() {
         });
     }
 
-    // 3. Strict PWA Routing: All PWA instances MUST go directly to /admin (Login / Dashboard)
+    // 3. Strict PWA Routing: All PWA instances (Desktop & Mobile) MUST go directly to /admin
     const isStandalone =
       window.matchMedia("(display-mode: standalone)").matches ||
-      ("standalone" in navigator && (navigator as { standalone?: boolean }).standalone === true);
+      window.matchMedia("(display-mode: fullscreen)").matches ||
+      window.matchMedia("(display-mode: minimal-ui)").matches ||
+      window.matchMedia("(display-mode: window-controls-overlay)").matches ||
+      ("standalone" in navigator && (navigator as { standalone?: boolean }).standalone === true) ||
+      document.referrer.includes("android-app://") ||
+      document.documentElement.classList.contains("is-pwa-app");
 
     if (isStandalone) {
       document.documentElement.classList.add("is-pwa-app");
-      // If PWA is on public page, immediately forward to /admin
+      // If PWA is on public page, immediately hard-redirect to /admin
       if (
         !pathname.startsWith("/admin") &&
         !pathname.startsWith("/verifikasi-c6") &&
         !pathname.startsWith("/stiker-coklit")
       ) {
-        router.replace("/admin");
+        window.location.replace("/admin");
       }
     }
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     };
-  }, [pathname, router]);
+  }, [pathname]);
 
   return null;
 }
