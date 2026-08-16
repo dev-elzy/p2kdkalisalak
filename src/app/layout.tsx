@@ -3,6 +3,8 @@ import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "@/components/providers";
 import { PwaRegistrar } from "@/components/pwa-registrar";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-sans",
@@ -59,6 +61,8 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 font-sans selection:bg-blue-600/20 selection:text-blue-900">
         <PwaRegistrar />
         <AppProviders>{children}</AppProviders>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
