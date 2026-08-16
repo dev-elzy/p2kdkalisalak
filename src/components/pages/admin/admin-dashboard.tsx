@@ -49,6 +49,7 @@ import { ModalMutasi } from "./modals/modal-mutasi";
 import { ModalTpsForm } from "./modals/modal-tps-form";
 import { ModalForceChangePassword } from "./modals/modal-force-change-password";
 import { FloatingQrVerifier } from "./widgets/floating-qr-verifier";
+import { FieldBottomNav } from "./field-bottom-nav";
 
 export const AdminDashboard: React.FC = () => {
   const searchParams = useSearchParams();
@@ -56,13 +57,16 @@ export const AdminDashboard: React.FC = () => {
   const tpsParam = searchParams.get("tps") || "";
   const userParam = searchParams.get("user") || "";
 
-  // 1. Check if assigned to a specific TPS (Field Officer / Pantarlih)
+  // 1. Check if assigned to a specific TPS / Field Officer (Pantarlih / PPS)
   const isFieldOfficer =
     (tpsParam !== "" && tpsParam !== "SEMUA") ||
     roleParam === "petugas" ||
     roleParam === "pantarlih" ||
+    roleParam === "petugas_tps" ||
+    roleParam === "pps" ||
     userParam.toLowerCase().includes("lapangan") ||
-    userParam.toLowerCase().includes("pantarlih");
+    userParam.toLowerCase().includes("pantarlih") ||
+    userParam.toLowerCase().startsWith("pps");
 
   const isSuperAdmin = !isFieldOfficer && (
     roleParam === "super_admin" ||
@@ -135,10 +139,11 @@ export const AdminDashboard: React.FC = () => {
   const defaultInitialTab: TabType = isFieldOfficer ? "coklit" : roleParam === "seksi_pemilih" ? "pemilih" : roleParam === "seksi_penjaringan" ? "penjaringan" : roleParam === "seksi_penyaringan" ? "kandidat" : roleParam === "seksi_pemungutan" ? "realcount" : roleParam === "seksi_logistik" || roleParam === "seksi_publikasi" ? "print" : "dashboard";
 
   const [activeTab, setActiveTab] = useState<TabType>(defaultInitialTab);
-  const allowedFieldTabs: TabType[] = ["coklit", "pemilih", "dpt", "print", "realcount", "tps"];
+  const allowedFieldTabs: TabType[] = ["coklit", "pemilih", "dpt", "export", "print", "realcount", "tps"];
   const effectiveActiveTab: TabType = isFieldOfficer && !allowedFieldTabs.includes(activeTab) ? "coklit" : activeTab;
   const [currentCoklitTps, setCurrentCoklitTps] = useState(assignedTps);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   // Data States
@@ -956,7 +961,7 @@ export const AdminDashboard: React.FC = () => {
         />
 
         {/* 3. Main Dashboard Body */}
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 space-y-6">
+        <main className={`flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 space-y-6 ${isFieldOfficer ? "pb-28" : ""}`}>
           {/* KPI Metrics - Khusus Pimpinan / Seksi Utama P2KD */}
           {!isFieldOfficer && effectiveActiveTab === "dashboard" && (
             <MetricsOverview
@@ -1296,11 +1301,26 @@ export const AdminDashboard: React.FC = () => {
         }}
       />
 
-      {/* Floating Center C6 QR Verifier Button - STRICTLY ONLY FOR PETUGAS_TPS (PPS Meja RW) */}
-      {isPetugasTpsOnly && (
+      {/* 4. Native Mobile Bottom Navigation Bar for Field Officers */}
+      {isFieldOfficer && (
+        <FieldBottomNav
+          activeTab={effectiveActiveTab}
+          onSelectTab={(tab) => setActiveTab(tab)}
+          userRole={computedUserRole}
+          userSeksi={computedUserSeksi}
+          assignedTps={assignedTps}
+          onOpenScanner={() => setIsScannerOpen(true)}
+        />
+      )}
+
+      {/* 5. Live Rear Camera QR Verifier Modal (Form C6 / Stiker Coklit) */}
+      {(isPetugasTpsOnly || isFieldOfficer) && (
         <FloatingQrVerifier
           assignedMeja={assignedTps}
           userName={computedUserName}
+          isOpenControlled={isScannerOpen}
+          onCloseControlled={() => setIsScannerOpen(false)}
+          showFloatingTrigger={!isFieldOfficer && isPetugasTpsOnly}
         />
       )}
     </div>
