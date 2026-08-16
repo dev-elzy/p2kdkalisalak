@@ -59,8 +59,8 @@ export const TabDashboardOverview: React.FC<TabDashboardOverviewProps> = ({
   // 1. Data Pemilih Metrics
   const activeVoters = voters.filter((v) => v.statusAktif === "AKTIF");
   const totalAktif = activeVoters.length;
-  const totalLaki = activeVoters.filter((v) => v.jenisKelamin === "L").length;
-  const totalPerempuan = activeVoters.filter((v) => v.jenisKelamin === "P").length;
+  const totalLaki = activeVoters.filter((v) => String(v.jenisKelamin).toUpperCase().startsWith("L")).length;
+  const totalPerempuan = activeVoters.filter((v) => !String(v.jenisKelamin).toUpperCase().startsWith("L")).length;
   const totalTms = voters.filter((v) => v.statusAktif === "TMS").length;
 
   // 2. Coklit Metrics

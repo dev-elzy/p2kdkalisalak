@@ -82,8 +82,8 @@ export const PrintBeritaAcara: React.FC<PrintBeritaAcaraProps> = ({
   const fullFormalDate = `${dateNum} ${monthName} ${yearNum}`;
 
   const activeVoters = voters.filter((v) => v.statusAktif === "AKTIF");
-  const totalLaki = activeVoters.filter((v) => v.jenisKelamin === "L").length;
-  const totalPerempuan = activeVoters.filter((v) => v.jenisKelamin === "P").length;
+  const totalLaki = activeVoters.filter((v) => String(v.jenisKelamin).toUpperCase().startsWith("L")).length;
+  const totalPerempuan = activeVoters.filter((v) => !String(v.jenisKelamin).toUpperCase().startsWith("L")).length;
 
   // Dynamic Signatories from Database Anggota List
   const ketuaP2KD =

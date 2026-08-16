@@ -789,8 +789,8 @@ export const AdminDashboard: React.FC = () => {
 
   // --- STATS COMPUTATION ---
   const totalAktif = voters.filter((v) => v.statusAktif === "AKTIF").length;
-  const totalLaki = voters.filter((v) => v.statusAktif === "AKTIF" && v.jenisKelamin === "L").length;
-  const totalPerempuan = voters.filter((v) => v.statusAktif === "AKTIF" && v.jenisKelamin === "P").length;
+  const totalLaki = voters.filter((v) => v.statusAktif === "AKTIF" && String(v.jenisKelamin).toUpperCase().startsWith("L")).length;
+  const totalPerempuan = voters.filter((v) => v.statusAktif === "AKTIF" && !String(v.jenisKelamin).toUpperCase().startsWith("L")).length;
   const totalTms = voters.filter((v) => v.statusAktif === "TMS").length;
   const totalAduanMenunggu = aduanList.filter((a) => a.status === "MENUNGGU").length;
 

@@ -266,7 +266,7 @@ export const TabMasterPemilih: React.FC<TabMasterPemilihProps> = ({
                       <td className="py-3 px-4">
                         <div className="font-bold text-slate-900">{p.namaLengkap}</div>
                         <div className="text-[10px] text-slate-500">
-                          {p.jenisKelamin === "L" ? "Laki-laki" : "Perempuan"} • Lahir: {p.tempatLahir}, {p.tanggalLahir}
+                          {String(p.jenisKelamin).toUpperCase().startsWith("L") ? "Laki-laki" : "Perempuan"} • Lahir: {p.tempatLahir}, {p.tanggalLahir}
                         </div>
                       </td>
                       <td className="py-3 px-4">
