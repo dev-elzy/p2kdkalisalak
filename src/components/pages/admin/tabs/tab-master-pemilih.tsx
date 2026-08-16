@@ -151,18 +151,6 @@ export const TabMasterPemilih: React.FC<TabMasterPemilihProps> = ({
     }
   };
 
-  const handlePromoteCurrentFiltered = async () => {
-    if (filteredVoters.length === 0 || !onPromoteToDpt) return;
-    const ids = filteredVoters.map((v) => v.id);
-    setIsProcessing(true);
-    try {
-      await onPromoteToDpt(ids);
-      setSelectedIds([]);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
   return (
     <div className="space-y-5">
       {/* Hero Header */}
@@ -208,23 +196,6 @@ export const TabMasterPemilih: React.FC<TabMasterPemilihProps> = ({
                 ? "Daftar pemilih ini berisi warga yang telah lolos verifikasi faktual lapangan dan telah disahkan masuk ke DPT. Data pemilih di sini siap ditetapkan pada Sidang Pleno DPT Pilkades Kalisalak."
                 : "Daftar pemilih sementara yang sedang dalam proses pencocokan dan penelitian door-to-door. Pemilih yang sudah diverifikasi dapat langsung dipindahkan ke Daftar Pemilih Tetap (DPT)."}
             </p>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            {mode === "DPS" && onPromoteToDpt && filteredVoters.length > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePromoteCurrentFiltered}
-                disabled={isProcessing}
-                className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border-emerald-400/40 text-xs font-bold"
-              >
-                <UserCheck className="w-4 h-4 mr-1.5" />
-                {selectedTpsFilter !== "SEMUA"
-                  ? `Verifikasi Semua di ${selectedTpsFilter} (${filteredVoters.length})`
-                  : `Verifikasi Semua DPS (${filteredVoters.length})`}
-              </Button>
-            )}
           </div>
         </div>
       </Card>
