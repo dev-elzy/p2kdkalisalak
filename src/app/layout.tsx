@@ -65,6 +65,13 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
+                  // 1. Instantly silence and block all automatic PWA install popups / infobars
+                  window.addEventListener('beforeinstallprompt', function(e) {
+                    e.preventDefault();
+                    return false;
+                  }, true);
+
+                  // 2. Strict PWA standalone redirect
                   var isPWA = window.matchMedia('(display-mode: standalone)').matches ||
                               window.matchMedia('(display-mode: fullscreen)').matches ||
                               window.matchMedia('(display-mode: minimal-ui)').matches ||
