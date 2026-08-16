@@ -175,33 +175,35 @@ export const PrintBeritaAcara: React.FC<PrintBeritaAcaraProps> = ({
             <strong>{monthName}</strong> tahun <strong>{yearText}</strong> ({formattedNumericDate}), bertempat di Balai Desa Kalisalak, Panitia Pemilihan Kepala Desa (P2KD) Kalisalak telah melaksanakan Rapat Pleno Terbuka Penetapan Daftar Pemilih Tetap (DPT) Pemilihan Kepala Desa Kalisalak Periode 2027–2035.
           </p>
           <p>
-            Rapat Pleno dihadiri oleh segenap Anggota P2KD, Petugas Pemutakhiran Data Pemilih (Pantarlih), Ketua KPPS seluruh TPS desa, BPD, Perangkat Desa, serta Saksi dari masing-masing Calon Kepala Desa.
+            Rapat Pleno dihadiri oleh segenap Anggota P2KD, Koordinator Lapangan Wilayah RW 01 s/d RW 13, BPD, Perangkat Desa, serta Saksi dari masing-masing Calon Kepala Desa.
           </p>
           <p>
             Berdasarkan hasil rekapitulasi akhir pemutakhiran data pemilih, perbaikan DPSHP, dan penanganan tanggapan masyarakat, P2KD Kalisalak menetapkan rekapitulasi DPT sebagai berikut:
           </p>
         </div>
 
-        {/* Tabel Rekapitulasi 7 TPS */}
+        {/* Tabel Rekapitulasi 13 Meja Pendaftaran & Wilayah RW */}
         <div className="my-5">
           <table className="w-full text-xs font-sans border-collapse border border-black">
             <thead>
               <tr className="bg-slate-100 font-bold text-center">
                 <th className="border border-black p-2 w-10">NO</th>
-                <th className="border border-black p-2">TPS</th>
-                <th className="border border-black p-2">LOKASI PEMUNGUTAN</th>
+                <th className="border border-black p-2">MEJA PENDAFTARAN / WILAYAH</th>
+                <th className="border border-black p-2">LOKASI PEMUNGUTAN SUARA</th>
                 <th className="border border-black p-2 w-16">L</th>
                 <th className="border border-black p-2 w-16">P</th>
-                <th className="border border-black p-2 w-20">TOTAL</th>
+                <th className="border border-black p-2 w-20">TOTAL DPT</th>
               </tr>
             </thead>
             <tbody>
               {tpsList.map((t, idx) => {
-                const votersInTps = activeVoters.filter((v) =>
-                  v.tps.toLowerCase().includes(t.nomorTps.toLowerCase())
-                );
-                const l = votersInTps.filter((v) => v.jenisKelamin === "L").length;
-                const p = votersInTps.filter((v) => v.jenisKelamin === "P").length;
+                const rwNum = t.nomorTps.replace(/\D/g, "").padStart(2, "0");
+                const votersInRw = activeVoters.filter((v) => {
+                  const vRw = (v.rw || "").replace(/\D/g, "").padStart(2, "0");
+                  return vRw === rwNum || (v.tps && v.tps.includes(t.nomorTps));
+                });
+                const l = votersInRw.filter((v) => String(v.jenisKelamin).toUpperCase().startsWith("L")).length;
+                const p = votersInRw.filter((v) => !String(v.jenisKelamin).toUpperCase().startsWith("L")).length;
                 return (
                   <tr key={t.id} className="text-center">
                     <td className="border border-black p-1.5">{idx + 1}</td>
@@ -209,13 +211,13 @@ export const PrintBeritaAcara: React.FC<PrintBeritaAcaraProps> = ({
                     <td className="border border-black p-1.5 text-left">{t.lokasi}</td>
                     <td className="border border-black p-1.5">{l}</td>
                     <td className="border border-black p-1.5">{p}</td>
-                    <td className="border border-black p-1.5 font-bold">{votersInTps.length}</td>
+                    <td className="border border-black p-1.5 font-bold">{votersInRw.length}</td>
                   </tr>
                 );
               })}
               <tr className="bg-slate-100 font-black text-center">
                 <td colSpan={3} className="border border-black p-2 text-right">
-                  TOTAL REKAPITULASI DESA KALISALAK
+                  TOTAL REKAPITULASI DPT DESA KALISALAK
                 </td>
                 <td className="border border-black p-2">{totalLaki}</td>
                 <td className="border border-black p-2">{totalPerempuan}</td>

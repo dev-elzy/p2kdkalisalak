@@ -1050,8 +1050,11 @@ export const AdminDashboard: React.FC = () => {
               nomorBeritaAcara={nomorBeritaAcara}
               setNomorBeritaAcara={setNomorBeritaAcara}
               totalAktif={totalAktif}
+              voters={voters}
+              tpsList={tpsList}
               onLockDpt={handleLockDpt}
               onUnlockDpt={handleUnlockDpt}
+              onNavigatePrint={() => setActiveTab("print")}
             />
           )}
 
