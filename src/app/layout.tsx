@@ -36,14 +36,13 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/logo.png", sizes: "32x32", type: "image/png" },
-      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
+      { url: "/logo.svg", type: "image/svg+xml" },
+      { url: "/icons/pwa-icon.svg", sizes: "512x512", type: "image/svg+xml" },
     ],
-    shortcut: "/logo.png",
+    shortcut: "/logo.svg",
     apple: [
-      { url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
-      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      { url: "/icons/pwa-icon.svg", sizes: "180x180", type: "image/svg+xml" },
+      { url: "/logo.svg", type: "image/svg+xml" },
     ],
   },
 };
