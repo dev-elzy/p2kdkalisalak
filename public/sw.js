@@ -1,4 +1,4 @@
-const CACHE_NAME = "p2kd-kalisalak-v2";
+const CACHE_NAME = "p2kd-kalisalak-v3";
 const PRECACHE_ASSETS = [
   "/icon-192x192.png",
   "/icon-512x512.png",
