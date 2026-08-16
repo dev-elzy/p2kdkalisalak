@@ -43,6 +43,17 @@ export const AdminLoginForm: React.FC = () => {
     }
   });
 
+  const [isStandalone] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return (
+        window.matchMedia("(display-mode: standalone)").matches ||
+        ("standalone" in navigator && (navigator as { standalone?: boolean }).standalone === true) ||
+        document.documentElement.classList.contains("is-pwa-app")
+      );
+    }
+    return false;
+  });
+
   const handleTurnstileVerify = useCallback((token: string) => {
     if (token) {
       setIsSecurityVerified(true);
@@ -251,18 +262,20 @@ export const AdminLoginForm: React.FC = () => {
                   </Button>
                 </div>
 
-                {/* Secondary Button: Return to Public Portal */}
-                <div>
-                  <Link href="/" className="block w-full">
-                    <button
-                      type="button"
-                      className="w-full h-11 rounded-2xl bg-slate-950/60 hover:bg-slate-950/80 border border-white/10 text-slate-300 hover:text-white font-bold text-xs transition-all flex items-center justify-center gap-2 hover:border-white/20 cursor-pointer"
-                    >
-                      <Globe className="w-4 h-4 text-blue-400" />
-                      <span>Kembali ke Portal Informasi Publik</span>
-                    </button>
-                  </Link>
-                </div>
+                {/* Secondary Button: Return to Public Portal (Hidden on PWA Standalone App) */}
+                {!isStandalone && (
+                  <div>
+                    <Link href="/" className="block w-full">
+                      <button
+                        type="button"
+                        className="w-full h-11 rounded-2xl bg-slate-950/60 hover:bg-slate-950/80 border border-white/10 text-slate-300 hover:text-white font-bold text-xs transition-all flex items-center justify-center gap-2 hover:border-white/20 cursor-pointer"
+                      >
+                        <Globe className="w-4 h-4 text-blue-400" />
+                        <span>Kembali ke Portal Informasi Publik</span>
+                      </button>
+                    </Link>
+                  </div>
+                )}
               </form>
             </div>
           </div>
