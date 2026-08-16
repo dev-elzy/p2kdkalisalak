@@ -1,8 +1,10 @@
-const CACHE_NAME = "p2kd-kalisalak-v3";
+const CACHE_NAME = "p2kd-kalisalak-v4";
 const PRECACHE_ASSETS = [
+  "/favicon.ico",
   "/icon-192x192.png",
   "/icon-512x512.png",
   "/apple-touch-icon.png",
+  "/logo.png",
   "/logo.svg",
   "/manifest.json",
 ];
