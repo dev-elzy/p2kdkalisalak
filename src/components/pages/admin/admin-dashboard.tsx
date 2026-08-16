@@ -48,6 +48,7 @@ import { ModalTms } from "./modals/modal-tms";
 import { ModalMutasi } from "./modals/modal-mutasi";
 import { ModalTpsForm } from "./modals/modal-tps-form";
 import { ModalForceChangePassword } from "./modals/modal-force-change-password";
+import { FloatingQrVerifier } from "./widgets/floating-qr-verifier";
 
 export const AdminDashboard: React.FC = () => {
   const searchParams = useSearchParams();
@@ -134,7 +135,7 @@ export const AdminDashboard: React.FC = () => {
   const defaultInitialTab: TabType = isFieldOfficer ? "coklit" : roleParam === "seksi_pemilih" ? "pemilih" : roleParam === "seksi_penjaringan" ? "penjaringan" : roleParam === "seksi_penyaringan" ? "kandidat" : roleParam === "seksi_pemungutan" ? "realcount" : roleParam === "seksi_logistik" || roleParam === "seksi_publikasi" ? "print" : "dashboard";
 
   const [activeTab, setActiveTab] = useState<TabType>(defaultInitialTab);
-  const allowedFieldTabs: TabType[] = ["coklit", "pemilih", "print", "realcount"];
+  const allowedFieldTabs: TabType[] = ["coklit", "pemilih", "dpt", "print", "realcount", "tps"];
   const effectiveActiveTab: TabType = isFieldOfficer && !allowedFieldTabs.includes(activeTab) ? "coklit" : activeTab;
   const [currentCoklitTps, setCurrentCoklitTps] = useState(assignedTps);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -1282,6 +1283,12 @@ export const AdminDashboard: React.FC = () => {
             setShowChangePasswordModal(false);
           }
         }}
+      />
+
+      {/* Floating Center C6 QR Verifier Button for Quick Field & PPS Operations */}
+      <FloatingQrVerifier
+        assignedMeja={assignedTps}
+        userName={computedUserName}
       />
     </div>
   );
